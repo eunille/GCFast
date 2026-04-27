@@ -1,0 +1,91 @@
+import { z } from "zod";
+import { apiHandler } from "@/lib/utils/api-handler";
+import { withAuth } from "@/lib/middleware/withAuth";
+import { validate } from "@/lib/utils/validate";
+import { successResponse, errorResponse } from "@/lib/utils/api-response";
+import { ErrorCodes } from "@/lib/types/error-codes";
+import { toRange, buildMeta } from "@/lib/utils/pagination";
+import { applySorting } from "@/lib/utils/query-builder";
+import { createSupabaseServer } from "@/lib/supabase/server";
+import { apiPaymentHistoryFilterSchema } from "@/features/payments/types/payment.schemas";
+
+const uuidSchema = z.string().uuid();
+
+interface RouteContext {
+  params: Promise<{ memberId: string }>;
+}
+
+export const GET = apiHandler(async (req: Request, ctx: unknown) => {
+  const { memberId } = await (ctx as RouteContext).params;
+
+  // 1. Validate memberId param
+  const idCheck = uuidSchema.safeParse(memberId);
+  if (!idCheck.success) {
+    return errorResponse(ErrorCodes.INVALID_UUID, "Invalid member ID", 400);
+  }
+
+  // 2. Authenticate
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+
+  const supabase = await createSupabaseServer();
+
+  // 3. Role-based access check BEFORE data fetch (IDOR prevention)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, member_id")
+    .eq("id", authResult.id)
+    .single();
+
+  const isTreasurer = profile?.role === "treasurer";
+  const isOwnRecord = profile?.member_id === memberId;
+
+  if (!isTreasurer && !isOwnRecord) {
+    return errorResponse(ErrorCodes.FORBIDDEN, "Access denied", 403);
+  }
+
+  // 4. Validate query params
+  const { searchParams } = new URL(req.url);
+  const parsed = validate(
+    apiPaymentHistoryFilterSchema,
+    Object.fromEntries(searchParams)
+  );
+  if (!parsed.success) return parsed.response;
+
+  const { page, pageSize, sortBy, sortOrder, paymentType, year } = parsed.data;
+  const { from, to } = toRange({ page, pageSize });
+
+  // 5. Build query — only this member's payment records
+  let query = supabase
+    .from("payment_records")
+    .select("*", { count: "exact" })
+    .eq("member_id", memberId)
+    .range(from, to);
+
+  if (paymentType) query = query.eq("payment_type", paymentType);
+  if (year !== undefined) query = query.eq("year_ref", year);
+
+  query = applySorting(query, sortBy ?? "payment_date", sortOrder, [
+    "payment_date",
+    "amount_paid",
+  ]);
+
+  const { data, count, error } = await query;
+  if (error) throw new Error(error.message);
+
+  // 6. Map rows (snake_case → camelCase)
+  const records = (data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.id,
+    memberId: row.member_id,
+    paymentType: row.payment_type,
+    amountPaid: row.amount_paid,
+    paymentDate: row.payment_date,
+    academicPeriodId: row.academic_period_id ?? null,
+    referenceNumber: row.reference_number ?? null,
+    notes: row.notes ?? null,
+    recordedBy: row.recorded_by,
+    createdAt: row.created_at,
+  }));
+
+  return successResponse(records, buildMeta(count ?? 0, { page, pageSize }));
+});
