@@ -2,7 +2,25 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #2C3E50;
+  --card: #ffffff;
+  --card-foreground: #2C3E50;
+  --popover: #ffffff;
+  --popover-foreground: #2C3E50;
+  --primary: #1E3A5F;
+  --primary-foreground: #ffffff;
+  --secondary: #D6E4F0;
+  --secondary-foreground: #1E3A5F;
+  --muted: #F2F3F4;
+  --muted-foreground: #7F8C8D;
+  --accent: #2E86C1;
+  --accent-foreground: #ffffff;
+  --destructive: #E74C3C;
+  --destructive-foreground: #ffffff;
+  --border: #D6E4F0;
+  --input: #D6E4F0;
+  --ring: #2E86C1;
+  --radius: 0.5rem;
 }
 
 @theme inline {
@@ -12,12 +30,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
