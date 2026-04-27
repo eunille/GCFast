@@ -1,6 +1,8 @@
 // app/(treasurer)/members/[id]/page.tsx
 // Layer 4 — PRESENTATIONAL: Individual member detail page
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ id: string }>;
 }

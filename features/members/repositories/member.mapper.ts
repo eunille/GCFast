@@ -17,3 +17,46 @@ export function mapMemberFromDb(row: Record<string, unknown>): Member {
     createdAt: new Date(row.created_at as string),
   };
 }
+
+// ─── API mapper — GFAST canonical model (used by server-side API routes) ─────
+
+export interface ApiMember {
+  id: string;
+  profileId: string | null;
+  collegeId: string;
+  collegeName?: string;
+  collegeCode?: string;
+  employeeId?: string;
+  fullName: string;
+  email: string;
+  memberType: "FULL_TIME" | "ASSOCIATE";
+  joinedAt?: string;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function mapApiMemberFromDb(row: Record<string, unknown>): ApiMember {
+  const colleges = row.colleges as
+    | { name?: string; code?: string }
+    | null
+    | undefined;
+
+  return {
+    id: row.id as string,
+    profileId: (row.profile_id as string | null) ?? null,
+    collegeId: row.college_id as string,
+    collegeName: colleges?.name,
+    collegeCode: colleges?.code,
+    employeeId: row.employee_id as string | undefined,
+    fullName: row.full_name as string,
+    email: row.email as string,
+    memberType: row.member_type as "FULL_TIME" | "ASSOCIATE",
+    joinedAt: row.joined_at as string | undefined,
+    isActive: row.is_active as boolean,
+    notes: row.notes as string | undefined,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
