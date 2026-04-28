@@ -1,9 +1,7 @@
-// app/(member)/dashboard/page.tsx
-// Layer 4 — PRESENTATIONAL: Member self-service dashboard
+// Redirects to the canonical /member/dashboard URL
+import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
-
-export default function MemberDashboardPage() {
-  return null;
+export default function OldDashboardRedirect() {
+  redirect("/member/dashboard");
 }
 

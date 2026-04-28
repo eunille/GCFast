@@ -1,9 +1,7 @@
-// app/(treasurer)/overview/page.tsx
-// Layer 4 — PRESENTATIONAL: Treasurer overview page
+// Redirects to the canonical /treasurer/overview URL
+import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
-
-export default function TreasurerDashboardPage() {
-  return null;
+export default function OldOverviewRedirect() {
+  redirect("/treasurer/overview");
 }
 

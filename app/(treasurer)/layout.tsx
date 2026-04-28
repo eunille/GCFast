@@ -1,14 +1,7 @@
 // app/(treasurer)/layout.tsx
-// Treasurer shell layout — wraps all treasurer pages
+// Outer route group layout — pass-through only.
+// Role guard lives in app/(treasurer)/treasurer/layout.tsx
 
-"use client";
-
-import { useRequireRole } from "@/features/auth/hooks/useRequireRole";
-
-export default function TreasurerLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useRequireRole("TREASURER");
-
-  if (isLoading) return null;
-
+export default function TreasurerGroupLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
