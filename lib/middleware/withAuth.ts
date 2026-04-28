@@ -21,17 +21,43 @@
  */
 
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
 import { errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
 import type { User } from "@supabase/supabase-js";
 
 /**
- * Authenticate the request via Supabase JWT
- * 
+ * Authenticate the request via Supabase JWT.
+ *
+ * Supports two auth strategies (checked in order):
+ *  1. Authorization: Bearer <access_token> — for Postman / API clients / mobile
+ *  2. Cookie-based session — for browser clients (standard SSR flow)
+ *
  * @param req - Incoming request object
  * @returns User object if authenticated, or 401 Response if not
  */
 export async function withAuth(req: Request): Promise<User | Response> {
+  // ── Strategy 1: Bearer token (Postman / API clients) ────────────────────
+  const authHeader = req.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token) {
+      // Build a lightweight client that authenticates via the provided JWT.
+      // Cookie adapter is a no-op — we only need getUser() here.
+      const supabaseWithToken = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+          cookies: { getAll: () => [], setAll: () => {} },
+        }
+      );
+      const { data: { user }, error } = await supabaseWithToken.auth.getUser(token);
+      if (!error && user) return user;
+    }
+  }
+
+  // ── Strategy 2: Cookie-based session (browser / SSR) ────────────────────
   const supabase = await createSupabaseServer();
   const {
     data: { user },

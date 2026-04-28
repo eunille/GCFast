@@ -28,20 +28,29 @@ export const GET = apiHandler(async (req: Request, ctx: unknown) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   // 3. Role-based access check BEFORE data fetch (IDOR prevention)
+  // profiles has no member_id column; check ownership via members.profile_id
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, member_id")
+    .select("role")
     .eq("id", authResult.id)
     .single();
 
   const isTreasurer = profile?.role === "treasurer";
-  const isOwnRecord = profile?.member_id === memberId;
 
-  if (!isTreasurer && !isOwnRecord) {
-    return errorResponse(ErrorCodes.FORBIDDEN, "Access denied", 403);
+  if (!isTreasurer) {
+    // Non-treasurer: verify the requested memberId belongs to the current user
+    const { data: memberCheck } = await supabase
+      .from("members")
+      .select("profile_id")
+      .eq("id", memberId)
+      .single();
+
+    if (memberCheck?.profile_id !== authResult.id) {
+      return errorResponse(ErrorCodes.FORBIDDEN, "Access denied", 403);
+    }
   }
 
   // 4. Validate query params

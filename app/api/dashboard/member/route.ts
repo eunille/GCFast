@@ -9,16 +9,18 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
-  // 2. Resolve member_id via profile — explicit auth user ID filter (IDOR prevention)
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("member_id, role")
-    .eq("id", authResult.id)
+  // 2. Resolve member_id via reverse FK — profiles has no member_id column
+  // members.profile_id → profiles.id is the actual FK direction
+  const { data: memberLink } = await supabase
+    .from("members")
+    .select("id")
+    .eq("profile_id", authResult.id)
+    .eq("is_active", true)
     .single();
 
-  if (!profile?.member_id) {
+  if (!memberLink?.id) {
     return errorResponse(
       ErrorCodes.NOT_FOUND,
       "No member record linked to this account",
@@ -26,11 +28,13 @@ export const GET = apiHandler(async (req: Request) => {
     );
   }
 
+  const memberId = memberLink.id;
+
   // 3. Query member_payment_summary view for own record only
   const { data, error } = await supabase
     .from("member_payment_summary")
     .select("*")
-    .eq("member_id", profile.member_id)
+    .eq("member_id", memberId)
     .single();
 
   if (error || !data) {
@@ -38,7 +42,7 @@ export const GET = apiHandler(async (req: Request) => {
     const { data: member } = await supabase
       .from("members")
       .select("id, full_name, member_type, colleges(name)")
-      .eq("id", profile.member_id)
+      .eq("id", memberId)
       .single();
 
     if (!member) {

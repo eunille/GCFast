@@ -55,9 +55,10 @@ interface RoleCheckFailure {
  */
 export async function withRole(
   user: User,
-  requiredRole: UserRole
+  requiredRole: UserRole,
+  req?: Request
 ): Promise<RoleCheckSuccess | RoleCheckFailure> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const { data: profile, error } = await supabase
     .from("profiles")

@@ -12,68 +12,50 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
-  // 2. All aggregation runs at the DB level — no JS reduce()
-  const [
-    membersResult,
-    collectedResult,
-    statusCountsResult,
-    byCollegeResult,
-  ] = await Promise.all([
-    // Active member count
+  // 2. Single query: fetch all summary rows from the view.
+  //    Aggregate functions (PostgREST .sum()/.count()) are disabled on this project.
+  //    The view already computes per-member totals; we aggregate in JS (bounded by member count).
+  const [membersResult, summaryResult] = await Promise.all([
     supabase
       .from("members")
       .select("id", { count: "exact", head: true })
       .eq("is_active", true),
 
-    // Total collected: sum of all payment_records
-    supabase
-      .from("payment_records")
-      .select("amount_paid.sum()"),
-
-    // Members by payment status from the summary view
     supabase
       .from("member_payment_summary")
-      .select("status, count:status.count()"),
-
-    // Per-college collection breakdown
-    // Fetch both paid columns; group in JS (bounded by member count — acceptable)
-    supabase
-      .from("member_payment_summary")
-      .select("college_id, college_name, membership_fee_amount_paid, total_dues_paid"),
+      .select("status, college_id, college_name, membership_fee_amount_paid, total_dues_paid"),
   ]);
 
   if (membersResult.error) throw new Error(membersResult.error.message);
-  if (collectedResult.error) throw new Error(collectedResult.error.message);
-  if (statusCountsResult.error) throw new Error(statusCountsResult.error.message);
-  if (byCollegeResult.error) throw new Error(byCollegeResult.error.message);
+  if (summaryResult.error) throw new Error(summaryResult.error.message);
 
-  // 3. Parse status counts
-  const statusRows = (statusCountsResult.data ?? []) as Array<{ status: string; count: number }>;
-  const membersWithBalance = statusRows.find((r) => r.status === "HAS_BALANCE")?.count ?? 0;
-  const membersComplete = statusRows.find((r) => r.status === "COMPLETE")?.count ?? 0;
-
-  // 4. Parse total collected — Supabase aggregate .sum() returns { sum: number | null }[]
-  type AggRow = { sum: number | null };
-  const aggRow = ((collectedResult.data ?? []) as unknown as AggRow[])[0];
-  const totalCollected = aggRow?.sum ?? 0;
-
-  // 5. Map per-college breakdown
-  //    outstanding_balance = amount OWED, not collected.
-  //    Actual collected = membership_fee_amount_paid + total_dues_paid per member.
-  type CollegeRow = {
+  type SummaryRow = {
+    status: string;
     college_id: string;
     college_name: string;
     membership_fee_amount_paid: number | null;
     total_dues_paid: number | null;
   };
+  const rows = (summaryResult.data ?? []) as SummaryRow[];
+
+  // 3. Aggregate in JS — all bounded by active member count
+  let totalCollected = 0;
+  let membersWithBalance = 0;
+  let membersComplete = 0;
   const collegeMap = new Map<string, { collegeName: string; total: number; memberCount: number }>();
-  for (const row of ((byCollegeResult.data ?? []) as unknown as CollegeRow[])) {
+
+  for (const row of rows) {
     const collected = (row.membership_fee_amount_paid ?? 0) + (row.total_dues_paid ?? 0);
+    totalCollected += collected;
+
+    if (row.status === "HAS_BALANCE") membersWithBalance += 1;
+    else if (row.status === "COMPLETE") membersComplete += 1;
+
     const existing = collegeMap.get(row.college_id);
     if (existing) {
       existing.total += collected;
@@ -86,6 +68,7 @@ export const GET = apiHandler(async (req: Request) => {
       });
     }
   }
+
   const collectionByCollege = Array.from(collegeMap.entries()).map(([collegeId, d]) => ({
     collegeId,
     collegeName: d.collegeName,

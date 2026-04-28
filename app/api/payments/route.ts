@@ -4,18 +4,74 @@ import { withRole } from "@/lib/middleware/withRole";
 import { validate } from "@/lib/utils/validate";
 import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
+import { toRange, buildMeta } from "@/lib/utils/pagination";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { apiRecordPaymentSchema } from "@/features/payments/types/payment.schemas";
+import { z } from "zod";
 
 /** PostgreSQL unique constraint violation code. */
 const PG_UNIQUE_VIOLATION = "23505";
+
+const listQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  memberId: z.string().uuid().optional(),
+  paymentType: z.enum(["MEMBERSHIP_FEE", "MONTHLY_DUES"]).optional(),
+});
+
+export const GET = apiHandler(async (req: Request) => {
+  // 1. Authenticate + authorize (treasurer only)
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+
+  const roleResult = await withRole(authResult, "treasurer", req);
+  if (!roleResult.success) return roleResult.response;
+
+  // 2. Validate query params
+  const { searchParams } = new URL(req.url);
+  const parsed = validate(listQuerySchema, Object.fromEntries(searchParams));
+  if (!parsed.success) return parsed.response;
+
+  const { page, pageSize, memberId, paymentType } = parsed.data;
+  const { from, to } = toRange({ page, pageSize });
+
+  const supabase = await createSupabaseServer(req);
+
+  // 3. Query payment records
+  let query = supabase
+    .from("payment_records")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (memberId) query = query.eq("member_id", memberId);
+  if (paymentType) query = query.eq("payment_type", paymentType);
+
+  const { data, count, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const mapped = (data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.id,
+    memberId: row.member_id,
+    paymentType: row.payment_type,
+    amountPaid: row.amount_paid,
+    paymentDate: row.payment_date,
+    academicPeriodId: row.academic_period_id ?? null,
+    referenceNumber: row.reference_number ?? null,
+    notes: row.notes ?? null,
+    recordedBy: row.recorded_by,
+    createdAt: row.created_at,
+  }));
+
+  return successResponse(mapped, buildMeta(count ?? 0, { page, pageSize }));
+});
 
 export const POST = apiHandler(async (req: Request) => {
   // 1. Authenticate + authorize (treasurer only)
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   // 2. Validate request body
@@ -32,7 +88,7 @@ export const POST = apiHandler(async (req: Request) => {
   const { memberId, paymentType, amountPaid, paymentDate, academicPeriodId, referenceNumber, notes } =
     parsed.data;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   // 3. Verify member exists and is active
   const { data: member } = await supabase

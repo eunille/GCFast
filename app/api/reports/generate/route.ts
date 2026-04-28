@@ -15,7 +15,7 @@ export const POST = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   // 2. Validate body
@@ -32,7 +32,7 @@ export const POST = apiHandler(async (req: Request) => {
   const { year, collegeId, format } = parsed.data;
 
   // 3. Build report data from DB — service handles all querying
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   const reportData = await buildReportData({ year, collegeId, format }, supabase);
 
   // 4. Return in requested format

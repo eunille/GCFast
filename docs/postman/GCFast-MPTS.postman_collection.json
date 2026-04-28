@@ -1,0 +1,1878 @@
+{
+  "info": {
+    "name": "GCFast-MPTS API",
+    "description": "GFAST Teacher Membership Payment Tracking System \u2014 Full API Collection.\n\n## Setup\n1. Import this collection into Postman.\n2. Create an **Environment** named `GCFast Local` with these variables:\n   - `base_url` \u2192 `http://localhost:3000`\n   - `supabase_url` \u2192 `https://YOUR_PROJECT_REF.supabase.co`\n   - `supabase_anon_key` \u2192 your Supabase anon key\n   - `access_token` \u2192 *(auto-filled by Login request)*\n   - `treasurer_token` \u2192 *(auto-filled by Treasurer Login request)*\n   - `member_id` \u2192 *(fill with a real member UUID after creating one)*\n   - `member_member_id` \u2192 *(fill with the member UUID linked to a member-role user)*\n\n## Auth Flow\nRun **Login \u2192 Treasurer** or **Login \u2192 Member** first. The `access_token` variable is auto-set by the test script. All other requests use `Authorization: Bearer {{access_token}}`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "supabase_url",
+      "value": "https://YOUR_PROJECT_REF.supabase.co",
+      "type": "string"
+    },
+    {
+      "key": "supabase_anon_key",
+      "value": "YOUR_SUPABASE_ANON_KEY",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "member_id",
+      "value": "REPLACE_WITH_REAL_MEMBER_UUID",
+      "type": "string"
+    },
+    {
+      "key": "academic_period_id",
+      "value": "REPLACE_WITH_REAL_PERIOD_UUID",
+      "type": "string"
+    },
+    {
+      "key": "college_id",
+      "value": "REPLACE_WITH_REAL_COLLEGE_UUID",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0 \u2014 Auth (Supabase Direct)",
+      "description": "Supabase auth endpoints called directly. Run one of these first to get an access_token.",
+      "item": [
+        {
+          "name": "Login \u2014 Treasurer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "  pm.collectionVariables.set('access_token', json.access_token);",
+                  "  console.log('\u2705 access_token saved (treasurer)');",
+                  "} else {",
+                  "  console.error('\u274c Login failed:', JSON.stringify(json));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"treasurer@example.com\",\n  \"password\": \"yourpassword\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/token?grant_type=password",
+              "host": [
+                "{{supabase_url}}"
+              ],
+              "path": [
+                "auth",
+                "v1",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login \u2014 Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "  pm.collectionVariables.set('access_token', json.access_token);",
+                  "  console.log('\u2705 access_token saved (member)');",
+                  "} else {",
+                  "  console.error('\u274c Login failed:', JSON.stringify(json));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"member@example.com\",\n  \"password\": \"yourpassword\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/token?grant_type=password",
+              "host": [
+                "{{supabase_url}}"
+              ],
+              "path": [
+                "auth",
+                "v1",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "  pm.collectionVariables.set('access_token', json.access_token);",
+                  "  console.log('\u2705 access_token refreshed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"REPLACE_WITH_REFRESH_TOKEN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/token?grant_type=refresh_token",
+              "host": [
+                "{{supabase_url}}"
+              ],
+              "path": [
+                "auth",
+                "v1",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 \u2014 Auth (App Routes)",
+      "item": [
+        {
+          "name": "GET /api/auth/me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success true', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('id');",
+                  "  pm.expect(json.data).to.have.property('role');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/auth/invite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newmember@example.com\",\n  \"fullName\": \"New Member\",\n  \"memberId\": \"{{member_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/invite",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "invite"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/auth/signout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('access_token', '');",
+                  "console.log('access_token cleared');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/signout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signout"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 \u2014 Reference Data",
+      "item": [
+        {
+          "name": "GET /api/colleges",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns array', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  if (json.data.length > 0) {",
+                  "    pm.collectionVariables.set('college_id', json.data[0].id);",
+                  "    console.log('college_id set to', json.data[0].id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/colleges",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "colleges"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/academic-periods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns array', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  if (json.data.length > 0) {",
+                  "    pm.collectionVariables.set('academic_period_id', json.data[0].id);",
+                  "    console.log('academic_period_id set to', json.data[0].id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/academic-periods",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "academic-periods"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 \u2014 Members",
+      "item": [
+        {
+          "name": "GET /api/members (all, paginated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('envelope valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.meta).to.have.keys(['count','page','pageSize','hasMore']);",
+                  "  if (json.data.length > 0) {",
+                  "    pm.collectionVariables.set('member_id', json.data[0].id);",
+                  "    console.log('member_id set to', json.data[0].id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/members?page=1&pageSize=10&sortBy=full_name&sortOrder=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "full_name"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "asc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "collegeId",
+                  "value": "{{college_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "memberType",
+                  "value": "FULL_TIME",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/members/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('member returned', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/members/{{member_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "{{member_id}}"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/members (create)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('member created', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('id');",
+                  "  pm.collectionVariables.set('member_id', json.data.id);",
+                  "  console.log('new member_id:', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Maria Santos\",\n  \"email\": \"maria.santos@school.edu.ph\",\n  \"collegeId\": \"{{college_id}}\",\n  \"memberType\": \"FULL_TIME\",\n  \"employeeId\": \"EMP-001\",\n  \"joinedAt\": \"2026-01-15\",\n  \"notes\": \"Test member\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "PATCH /api/members/:id (update)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('member updated', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Updated notes from Postman\",\n  \"memberType\": \"ASSOCIATE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/members/{{member_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "{{member_id}}"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "PATCH /api/members/:id/deactivate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('deactivated', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/members/{{member_id}}/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "{{member_id}}",
+                "deactivate"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 \u2014 Payments",
+      "item": [
+        {
+          "name": "GET /api/payments/summaries (treasurer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('summary list valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.meta).to.have.keys(['count','page','pageSize','hasMore']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/summaries?page=1&pageSize=20&sortBy=full_name&sortOrder=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "summaries"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "full_name"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "asc"
+                },
+                {
+                  "key": "status",
+                  "value": "HAS_BALANCE",
+                  "disabled": true
+                },
+                {
+                  "key": "memberType",
+                  "value": "FULL_TIME",
+                  "disabled": true
+                },
+                {
+                  "key": "collegeId",
+                  "value": "{{college_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "hasMembershipFee",
+                  "value": "false",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "Santos",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/payments/member/:memberId (history)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('payment history valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/member/{{member_id}}?page=1&pageSize=20&sortOrder=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "member",
+                "{{member_id}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "paymentType",
+                  "value": "MONTHLY_DUES",
+                  "disabled": true
+                },
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/payments \u2014 Record Membership Fee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('payment recorded', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"{{member_id}}\",\n  \"paymentType\": \"MEMBERSHIP_FEE\",\n  \"amountPaid\": 200,\n  \"paymentDate\": \"2026-04-28\",\n  \"referenceNumber\": \"OR-0001\",\n  \"notes\": \"Paid in cash\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/payments \u2014 Record Monthly Dues",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('dues recorded', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"{{member_id}}\",\n  \"paymentType\": \"MONTHLY_DUES\",\n  \"amountPaid\": 50,\n  \"paymentDate\": \"2026-04-28\",\n  \"academicPeriodId\": \"{{academic_period_id}}\",\n  \"referenceNumber\": \"OR-0002\",\n  \"notes\": \"April 2026 dues\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/payments \u2014 Record Partial Payment (should succeed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 or 409', () => {",
+                  "  pm.expect([201, 409]).to.include(pm.response.code);",
+                  "  const json = pm.response.json();",
+                  "  if (pm.response.code === 409) {",
+                  "    console.log('409 expected if dues already recorded for this period');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"{{member_id}}\",\n  \"paymentType\": \"MONTHLY_DUES\",\n  \"amountPaid\": 25,\n  \"paymentDate\": \"2026-04-28\",\n  \"academicPeriodId\": \"REPLACE_WITH_DIFFERENT_PERIOD_UUID\",\n  \"notes\": \"Partial payment \u2014 \u20b125 of \u20b150\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 \u2014 Dashboards",
+      "item": [
+        {
+          "name": "GET /api/dashboard/treasurer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('stats valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.keys(['totalMembers','totalCollected','membersWithBalance','membersComplete','collectionByCollege']);",
+                  "  pm.expect(json.data.collectionByCollege).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/treasurer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "treasurer"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/dashboard/member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('member stats valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('memberId');",
+                  "  pm.expect(json.data).to.have.property('outstandingBalance');",
+                  "  pm.expect(json.data).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/member",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "member"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 \u2014 Reports",
+      "item": [
+        {
+          "name": "POST /api/reports/generate \u2014 JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('report JSON valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.have.property('year');",
+                  "  pm.expect(json.data).to.have.property('rows');",
+                  "  pm.expect(json.data.rows).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"year\": 2026,\n  \"format\": \"json\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "generate"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/reports/generate \u2014 Excel (.xlsx)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Excel content-type', () => {",
+                  "  pm.expect(pm.response.headers.get('content-type')).to.include('spreadsheetml');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"year\": 2026,\n  \"format\": \"excel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "generate"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/reports/generate \u2014 PDF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('PDF content-type', () => {",
+                  "  pm.expect(pm.response.headers.get('content-type')).to.include('pdf');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"year\": 2026,\n  \"format\": \"pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "generate"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/reports/generate \u2014 By College (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"collegeId\": \"{{college_id}}\",\n  \"year\": 2026,\n  \"format\": \"json\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "generate"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u2014 Dues Configuration",
+      "item": [
+        {
+          "name": "GET /api/dues-configurations/current",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('current rates valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  console.log('Current rates:', JSON.stringify(json.data, null, 2));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations/current",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations",
+                "current"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/dues-configurations (active only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('config list valid', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations?activeOnly=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations"
+              ],
+              "query": [
+                {
+                  "key": "activeOnly",
+                  "value": "true"
+                },
+                {
+                  "key": "paymentType",
+                  "value": "MONTHLY_DUES",
+                  "disabled": true
+                },
+                {
+                  "key": "memberType",
+                  "value": "FULL_TIME",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/dues-configurations (full history)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations?activeOnly=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations"
+              ],
+              "query": [
+                {
+                  "key": "activeOnly",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/dues-configurations \u2014 Set New Monthly Rate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 or 409', () => {",
+                  "  pm.expect([201, 409]).to.include(pm.response.code);",
+                  "  const json = pm.response.json();",
+                  "  if (pm.response.code === 201) {",
+                  "    pm.expect(json.success).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    console.log('New rate created:', json.data.amount);",
+                  "  } else {",
+                  "    console.log('409: rate already exists for this date');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentType\": \"MONTHLY_DUES\",\n  \"memberType\": \"FULL_TIME\",\n  \"amount\": 75,\n  \"effectiveFrom\": \"2027-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/dues-configurations \u2014 Set New Membership Fee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentType\": \"MEMBERSHIP_FEE\",\n  \"memberType\": \"FULL_TIME\",\n  \"amount\": 250,\n  \"effectiveFrom\": \"2027-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/dues-configurations \u2014 INVALID (Associate + Membership Fee)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 (validation error)', () => pm.response.to.have.status(400));",
+                  "pm.test('error envelope', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.false;",
+                  "  pm.expect(json.error.code).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentType\": \"MEMBERSHIP_FEE\",\n  \"memberType\": \"ASSOCIATE\",\n  \"amount\": 200,\n  \"effectiveFrom\": \"2027-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/dues-configurations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dues-configurations"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8 \u2014 Error Cases",
+      "item": [
+        {
+          "name": "GET /api/auth/me \u2014 No Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('error envelope', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.false;",
+                  "  pm.expect(json.error.code).to.equal('UNAUTHORIZED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/members \u2014 Invalid UUID (expect 404 or 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404', () => {",
+                  "  pm.expect([400, 404]).to.include(pm.response.code);",
+                  "  pm.expect(pm.response.json().success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/members/not-a-valid-uuid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "not-a-valid-uuid"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "POST /api/payments \u2014 Missing academicPeriodId for MONTHLY_DUES (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('VALIDATION_ERROR', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.false;",
+                  "  pm.expect(json.error.code).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"{{member_id}}\",\n  \"paymentType\": \"MONTHLY_DUES\",\n  \"amountPaid\": 50,\n  \"paymentDate\": \"2026-04-28\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ export const POST = apiHandler(async (req: Request) => {
   if (authResult instanceof Response) return authResult;
 
   // 2. Sign out — invalidates the session server-side
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   const { error } = await supabase.auth.signOut();
 
   if (error) {
