@@ -1,14 +1,7 @@
 // app/(member)/layout.tsx
-// Member shell layout — wraps member-facing pages
+// Outer route group layout — pass-through only.
+// Role guard lives in app/(member)/member/layout.tsx
 
-"use client";
-
-import { useRequireRole } from "@/features/auth/hooks/useRequireRole";
-
-export default function MemberLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useRequireRole("MEMBER");
-
-  if (isLoading) return null;
-
+export default function MemberGroupLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
