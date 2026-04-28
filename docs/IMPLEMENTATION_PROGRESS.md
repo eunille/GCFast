@@ -43,29 +43,45 @@
 
 ---
 
-## Phase 2 — App Shell & Navigation ⬜
+## Phase 2 — App Shell & Navigation ✅
 
 **Goal:** Both roles have a working shell layout with sidebar navigation and a sign-out button.
 
 | Item | File | Status |
 |------|------|--------|
-| `AppShell` component | `components/layout/AppShell/AppShell.tsx` | ⬜ |
-| `Sidebar` component | `components/layout/AppShell/Sidebar.tsx` | ⬜ |
-| `TopNav` component | `components/layout/AppShell/TopNav.tsx` | ⬜ |
-| Treasurer layout (wire up shell) | `app/(treasurer)/layout.tsx` | ⬜ |
-| Member layout (wire up shell) | `app/(member)/layout.tsx` | ⬜ |
+| `AppShell` component | `components/layout/AppShell/AppShell.tsx` | ✅ |
+| `Sidebar` component | `components/layout/AppShell/Sidebar.tsx` | ✅ |
+| `TopNav` component | `components/layout/AppShell/TopNav.tsx` | ✅ |
+| Treasurer layout (wire up shell) | `app/(treasurer)/treasurer/layout.tsx` | ✅ |
+| Member layout (wire up shell) | `app/(member)/member/layout.tsx` | ✅ |
+
+**Notes:**
+- `AppShell` handles desktop sidebar (always visible on `md+`) and mobile drawer overlay with backdrop
+- `Sidebar` highlights active route via `usePathname()`, shows user email/role, sign out via `useSignOut()`
+- `TopNav` is mobile-only (`md:hidden`) — hamburger toggle + page title derived from URL segment
+- Treasurer nav: Overview, Members, Payments, Reports
+- Member nav: My Dashboard
+- All colors/spacing from `@/theme` tokens; ShadCN `Button` and `Separator` used
 
 ---
 
-## Phase 3 — Reference Data Layer ⬜
+## Phase 3 — Reference Data Layer ✅
 
 **Goal:** Shared data needed by multiple features loaded once and cached.
 
 | Item | File | Status |
 |------|------|--------|
 | `useColleges` hook | `lib/hooks/useColleges.ts` | ✅ (pre-existing) |
-| `useAcademicPeriods` hook | `lib/hooks/useAcademicPeriods.ts` | ⬜ |
-| `useCurrentRates` hook | `features/dues-configurations/hooks/useCurrentRates.ts` | ⬜ |
+| `useAcademicPeriods` hook | `lib/hooks/useAcademicPeriods.ts` | ✅ |
+| `useCurrentRates` hook | `features/dues-configurations/hooks/useCurrentRates.ts` | ✅ |
+
+**Notes:**
+- `authFetch` utility added at `lib/utils/auth-fetch.ts` — attaches `Authorization: Bearer <token>` to all API calls
+- `academicPeriodRepository` at `lib/repositories/academic-period.repository.ts`
+- `duesConfigRepository` at `features/dues-configurations/repositories/dues-config.repository.ts`
+- `AcademicPeriod` type added to `lib/types/shared.types.ts`
+- `CurrentRates` / `CurrentRateEntry` types added to `features/dues-configurations/types/dues-config.types.ts`
+- All 3 endpoints tested and verified: return `200` when authenticated, `401` when unauthenticated
 
 ---
 

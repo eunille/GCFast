@@ -19,3 +19,15 @@ export type DuesConfigRow = {
   effective_until: string | null;
   created_at: string;
 };
+
+export interface CurrentRateEntry {
+  id: string;
+  amount: number;
+  effectiveFrom: string;
+}
+
+export interface CurrentRates {
+  MEMBERSHIP_FEE_FULL_TIME?: CurrentRateEntry;
+  MONTHLY_DUES_FULL_TIME?: CurrentRateEntry;
+  MONTHLY_DUES_ASSOCIATE?: CurrentRateEntry;
+}

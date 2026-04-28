@@ -7,6 +7,14 @@ export interface College {
   code: string;
 }
 
+export interface AcademicPeriod {
+  id: string;
+  label: string;
+  month: number;
+  year: number;
+  isActive: boolean;
+}
+
 export interface PaginationParams {
   page: number;
   pageSize: number;
