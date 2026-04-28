@@ -9,3 +9,18 @@ export interface DashboardStats {
   totalOutstanding: number;
   collectionRate: number; // 0–100 percentage
 }
+
+export interface CollegeCollection {
+  collegeId: string;
+  collegeName: string;
+  total: number;
+  memberCount: number;
+}
+
+export interface TreasurerDashboard {
+  totalMembers: number;
+  totalCollected: number;
+  membersWithBalance: number;
+  membersComplete: number;
+  collectionByCollege: CollegeCollection[];
+}
