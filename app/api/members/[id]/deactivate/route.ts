@@ -25,10 +25,10 @@ export const PATCH = apiHandler(async (req: Request, ctx: unknown) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   // Verify member exists and is currently active
   const { data: existing, error: fetchError } = await supabase

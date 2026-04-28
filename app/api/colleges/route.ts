@@ -10,7 +10,7 @@ export const GET = apiHandler(async (req: Request) => {
   if (authResult instanceof Response) return authResult;
 
   // 2. Fetch all colleges sorted by name
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   const { data, error } = await supabase
     .from("colleges")
     .select("id, name, code")

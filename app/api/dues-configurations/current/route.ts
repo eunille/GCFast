@@ -13,7 +13,7 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const { data, error } = await supabase
     .from("dues_configurations")

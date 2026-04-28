@@ -20,7 +20,7 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   // 2. Validate query params
@@ -46,7 +46,7 @@ export const GET = apiHandler(async (req: Request) => {
   } = parsed.data;
 
   const { from, to } = toRange({ page, pageSize });
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   // 3. Build query against the materialized view — DB does the filtering
   let query = supabase

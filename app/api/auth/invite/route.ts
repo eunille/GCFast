@@ -24,7 +24,7 @@ export const POST = apiHandler(async (req: Request) => {
   if (authResult instanceof Response) return authResult;
 
   // 2. Enforce treasurer-only access
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   // 3. Validate request body

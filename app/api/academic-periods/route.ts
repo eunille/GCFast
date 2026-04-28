@@ -4,25 +4,18 @@ import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
-interface AcademicPeriodRow {
-  id: string;
-  label: string;
-  year_start: number;
-  year_end: number;
-  is_active: boolean;
-}
-
 export const GET = apiHandler(async (req: Request) => {
   // 1. Authenticate — both roles need this for dropdown data
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
   // 2. Fetch all academic periods, most recent first
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   const { data, error } = await supabase
     .from("academic_periods")
-    .select("id, label, year_start, year_end, is_active")
-    .order("year_start", { ascending: false });
+    .select("id, label, month, year, is_active")
+    .order("year", { ascending: false })
+    .order("month", { ascending: false });
 
   if (error) {
     return errorResponse(
@@ -32,12 +25,11 @@ export const GET = apiHandler(async (req: Request) => {
     );
   }
 
-  // 3. Map DB snake_case → TS camelCase
-  const periods = (data ?? []).map((row: AcademicPeriodRow) => ({
+  const periods = (data ?? []).map((row) => ({
     id: row.id,
     label: row.label,
-    yearStart: row.year_start,
-    yearEnd: row.year_end,
+    month: row.month,
+    year: row.year,
     isActive: row.is_active,
   }));
 

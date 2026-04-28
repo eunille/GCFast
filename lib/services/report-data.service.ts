@@ -52,7 +52,8 @@ export async function buildReportData(
     .order("college_name")
     .order("full_name");
 
-  if (input.year) query = query.eq("year_ref", input.year);
+  // member_payment_summary has no year_ref column — view reflects current standing
+  // Filter by college only; year is used only for report metadata
   if (input.collegeId) query = query.eq("college_id", input.collegeId);
 
   const { data, error } = await query;
@@ -61,8 +62,8 @@ export async function buildReportData(
   const rows = (data ?? []) as Record<string, unknown>[];
   const members = rows.map(mapReportRow);
 
-  const totalCollected = members.reduce(
-    (sum, m) => sum + m.outstandingBalance,
+  const totalCollected = rows.reduce(
+    (sum, r) => sum + Number(r.membership_fee_amount_paid ?? 0) + Number(r.total_dues_paid ?? 0),
     0
   );
 

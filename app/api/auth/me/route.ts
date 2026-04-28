@@ -7,11 +7,12 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 interface ProfileRow {
   id: string;
   role: string;
-  member_id: string | null;
-  members: {
-    full_name: string;
-    email: string;
-  } | null;
+  full_name: string;
+  email: string;
+}
+
+interface MemberRow {
+  id: string;
 }
 
 export const GET = apiHandler(async (req: Request) => {
@@ -19,24 +20,32 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  // 2. Fetch profile with joined member name/email
-  const supabase = await createSupabaseServer();
-  const { data, error } = await supabase
+  // 2. Fetch profile — profiles table has no member_id column; FK is members.profile_id
+  const supabase = await createSupabaseServer(req);
+  const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, role, member_id, members(full_name, email)")
+    .select("id, role, full_name, email")
     .eq("id", authResult.id)
     .single<ProfileRow>();
 
-  if (error || !data) {
+  if (error || !profile) {
     return errorResponse(ErrorCodes.NOT_FOUND, "Profile not found", 404);
   }
 
-  // 3. Map DB snake_case → TS camelCase — never return raw Supabase User
+  // 3. Resolve linked member id via reverse FK (members.profile_id → profiles.id)
+  const { data: member } = await supabase
+    .from("members")
+    .select("id")
+    .eq("profile_id", authResult.id)
+    .eq("is_active", true)
+    .single<MemberRow>();
+
+  // 4. Map DB snake_case → TS camelCase — never return raw Supabase User
   return successResponse({
-    id: data.id,
-    email: data.members?.email ?? authResult.email ?? "",
-    fullName: data.members?.full_name ?? "",
-    role: data.role,
-    memberId: data.member_id ?? null,
+    id: profile.id,
+    email: profile.email,
+    fullName: profile.full_name,
+    role: profile.role,
+    memberId: member?.id ?? null,
   });
 });

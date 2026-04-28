@@ -24,7 +24,7 @@ export const GET = apiHandler(async (req: Request) => {
   if (authResult instanceof Response) return authResult;
 
   // Treasurer-only: member list contains full details (email, employee ID, notes)
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   const { searchParams } = new URL(req.url);
@@ -34,7 +34,7 @@ export const GET = apiHandler(async (req: Request) => {
   const { page, pageSize, sortBy, sortOrder, search, isActive, ...filters } = parsed.data;
   const { from, to } = toRange({ page, pageSize });
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   let query = supabase
     .from("members")
     .select(MEMBER_SELECT, { count: "exact" })
@@ -64,7 +64,7 @@ export const POST = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   let body: unknown;
@@ -77,7 +77,7 @@ export const POST = apiHandler(async (req: Request) => {
   const parsed = validate(apiCreateMemberSchema, body);
   if (!parsed.success) return parsed.response;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   const { fullName, email, collegeId, memberType, employeeId, joinedAt, notes } = parsed.data;
 
   // Email uniqueness check

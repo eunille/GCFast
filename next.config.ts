@@ -48,6 +48,9 @@ const corsHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // pdfkit and exceljs use Node.js built-ins (fs, stream, etc.) — exclude from bundler
+  serverExternalPackages: ["pdfkit", "exceljs"],
+
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },

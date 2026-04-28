@@ -34,7 +34,7 @@ export const GET = apiHandler(async (req: Request) => {
   const { paymentType, memberType, activeOnly } = parsed.data;
 
   // 3. Query
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   let query = supabase
     .from("dues_configurations")
     .select("id, payment_type, member_type, amount, effective_from, effective_until, created_at")
@@ -59,7 +59,7 @@ export const POST = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const roleResult = await withRole(authResult, "treasurer");
+  const roleResult = await withRole(authResult, "treasurer", req);
   if (!roleResult.success) return roleResult.response;
 
   // 2. Parse + validate body
@@ -75,7 +75,7 @@ export const POST = apiHandler(async (req: Request) => {
 
   const { paymentType, memberType, amount, effectiveFrom } = parsed.data;
 
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   // 3. Check for duplicate effective_from (unique constraint in DB)
   const { data: existing } = await supabase
