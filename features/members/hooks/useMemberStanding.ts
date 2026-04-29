@@ -3,14 +3,13 @@
 
 "use client";
 
-import type { Member } from "../types/member.types";
+import type { Member } from "@/lib/models";
 
 export function useMemberStanding(member: Member) {
-  const isActive = member.status === "ACTIVE";
-
   return {
-    isActive,
-    standingLabel: isActive ? "Active" : "Inactive",
-    canRecordPayments: isActive,
+    isActive: member.isActive,
+    standingLabel: member.isActive ? "Active" : "Inactive",
+    canRecordPayments: member.isActive,
   };
 }
+
