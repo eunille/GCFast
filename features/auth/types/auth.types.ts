@@ -1,11 +1,6 @@
 // features/auth/types/auth.types.ts
-// Layer 1 — DOMAIN: Auth user and role types
+// Re-exports canonical types from lib/models — do not define types here.
+// Source of truth: lib/models/auth.models.ts + lib/models/shared.models.ts
 
-export type UserRole = "MEMBER" | "TREASURER" | "ADMIN";
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  role: UserRole;
-  memberId: string | null;
-}
+export type { UserRole, ApiUserRole } from "@/lib/models";
+export type { AuthUser, AuthMe, InviteInput } from "@/lib/models";

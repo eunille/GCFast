@@ -1,36 +1,28 @@
 // features/payments/types/payment.types.ts
-// Layer 1 — DOMAIN: Pure TypeScript. Zero framework dependencies.
+// Re-exports canonical types from lib/models — do not define types here.
+// Source of truth: lib/models/payment.models.ts
 
-export type PaymentType = "MEMBERSHIP_FEE" | "MONTHLY_DUES";
+export type { PaymentType, PaymentStatus } from "@/lib/models";
+export type {
+  PaymentRecord,
+  RecordPaymentInput,
+  PaymentRecordQuery,
+  PaymentHistoryQuery,
+  PaymentSummaryRow,
+  PaymentSummaryQuery,
+} from "@/lib/models";
 
-export type PaymentStatus = "COMPLETE" | "HAS_BALANCE";
+// Alias: PaymentRecord is the canonical name — Payment kept for files not yet migrated.
+export type { PaymentRecord as Payment } from "@/lib/models";
 
-export interface Payment {
-  id: string;
-  memberId: string;
-  paymentType: PaymentType;
-  amountPaid: number;
-  paymentDate: Date;
-  monthRef: number | null; // 1–12, only for MONTHLY_DUES
-  yearRef: number | null;
-  recordedBy: string;
-}
-
-export interface MemberPaymentSummary {
-  memberId: string;
-  memberName: string;
-  college: string;
-  membershipFeePaid: boolean;
-  monthsPaid: number[]; // e.g. [1, 2, 3] = Jan, Feb, Mar paid
-  outstandingBalance: number;
-  status: PaymentStatus;
-}
+// Alias: PaymentSummaryRow is the canonical name — MemberPaymentSummary kept for files not yet migrated.
+export type { PaymentSummaryRow as MemberPaymentSummary } from "@/lib/models";
 
 // Pure business rule — no React, no Supabase
 export function computePaymentStatus(
-  summary: Pick<MemberPaymentSummary, "membershipFeePaid" | "outstandingBalance">
+  summary: { membershipFeePaid?: boolean; membership_fee_paid?: boolean; outstandingBalance?: number; outstanding_balance?: number }
 ): PaymentStatus {
-  return summary.membershipFeePaid && summary.outstandingBalance === 0
-    ? "COMPLETE"
-    : "HAS_BALANCE";
+  const feePaid = summary.membershipFeePaid ?? summary.membership_fee_paid ?? false;
+  const balance = summary.outstandingBalance ?? summary.outstanding_balance ?? 1;
+  return feePaid && balance === 0 ? "COMPLETE" : "HAS_BALANCE";
 }
