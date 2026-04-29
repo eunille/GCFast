@@ -5,6 +5,7 @@
 export type { PaymentType, PaymentStatus } from "@/lib/models";
 export type {
   PaymentRecord,
+  PaymentTransaction,
   RecordPaymentInput,
   PaymentRecordQuery,
   PaymentHistoryQuery,

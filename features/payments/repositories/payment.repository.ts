@@ -4,10 +4,12 @@
 import { authFetch } from "@/lib/utils/auth-fetch";
 import type {
   PaymentRecord,
+  PaymentTransaction,
   PaymentSummaryRow,
   RecordPaymentInput,
   PaymentSummaryQuery,
   PaymentHistoryQuery,
+  PaymentRecordQuery,
 } from "@/lib/models";
 import type { ApiSuccess, PaginationMeta } from "@/lib/models";
 
@@ -27,6 +29,17 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 export const paymentRepository = {
+  /** GET /api/payments — paginated transaction records with member + period join */
+  async getTransactions(
+    filter: PaymentRecordQuery = {}
+  ): Promise<{ data: PaymentTransaction[]; meta: PaginationMeta }> {
+    const qs = buildQuery(filter as Record<string, string | number | boolean | undefined>);
+    const res = await authFetch(`/api/payments${qs}`);
+    const json = (await res.json()) as ApiSuccess<PaymentTransaction[]>;
+    if (!json.success) throw new Error((json as { error?: { message?: string } }).error?.message ?? "API error");
+    return { data: json.data, meta: json.meta! };
+  },
+
   /** GET /api/payments/summaries — paginated member payment summary rows */
   async getSummaries(
     filter: PaymentSummaryQuery = {}
