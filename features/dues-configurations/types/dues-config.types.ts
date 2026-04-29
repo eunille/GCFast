@@ -1,15 +1,11 @@
 // features/dues-configurations/types/dues-config.types.ts
+// Re-exports canonical types from lib/models — do not define types here.
+// Source of truth: lib/models/dues-config.models.ts
 
-export type DuesConfig = {
-  id: string;
-  paymentType: "MEMBERSHIP_FEE" | "MONTHLY_DUES";
-  memberType: "FULL_TIME" | "ASSOCIATE";
-  amount: number;
-  effectiveFrom: string;      // ISO date
-  effectiveUntil: string | null;
-  createdAt: string;
-};
+export type { DuesConfig, CreateDuesConfigInput, CurrentRateEntry, CurrentRates } from "@/lib/models";
 
+// DuesConfigRow is an internal DB mapping type — not part of the API model.
+// Kept here because it is used only by the server-side route and mapper.
 export type DuesConfigRow = {
   id: string;
   payment_type: "MEMBERSHIP_FEE" | "MONTHLY_DUES";
@@ -19,15 +15,3 @@ export type DuesConfigRow = {
   effective_until: string | null;
   created_at: string;
 };
-
-export interface CurrentRateEntry {
-  id: string;
-  amount: number;
-  effectiveFrom: string;
-}
-
-export interface CurrentRates {
-  MEMBERSHIP_FEE_FULL_TIME?: CurrentRateEntry;
-  MONTHLY_DUES_FULL_TIME?: CurrentRateEntry;
-  MONTHLY_DUES_ASSOCIATE?: CurrentRateEntry;
-}

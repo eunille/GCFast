@@ -1,25 +1,9 @@
 // features/members/types/member.types.ts
-// Layer 1 — DOMAIN: Pure TypeScript. Zero framework dependencies.
+// Re-exports canonical types from lib/models — do not define types here.
+// Source of truth: lib/models/member.models.ts
 
-export type MemberRole = "MEMBER" | "TREASURER" | "ADMIN";
+export type { Member, CreateMemberInput, UpdateMemberInput, MemberListQuery } from "@/lib/models";
+export type { MemberType } from "@/lib/models";
 
-export type MemberStatus = "ACTIVE" | "INACTIVE";
-
-export interface Member {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  email: string;
-  collegeId: string;
-  collegeName: string;
-  role: MemberRole;
-  status: MemberStatus;
-  createdAt: Date;
-}
-
-export interface MemberFilter {
-  collegeId?: string;
-  status?: MemberStatus;
-  search?: string;
-}
+// Alias kept for any existing code that references MemberFilter — use MemberListQuery going forward.
+export type { MemberListQuery as MemberFilter } from "@/lib/models";

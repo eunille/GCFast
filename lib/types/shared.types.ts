@@ -1,20 +1,11 @@
 // lib/types/shared.types.ts
-// Layer 1 — DOMAIN: Shared global types used across multiple features
+// Re-exports shared reference types from lib/models.
+// Additional pagination/sort helpers used internally by repositories are defined here.
 
-export interface College {
-  id: string;
-  name: string;
-  code: string;
-}
+export type { College, AcademicPeriod } from "@/lib/models";
+export type { MemberType, PaymentStatus, PaymentType, PaginationMeta } from "@/lib/models";
 
-export interface AcademicPeriod {
-  id: string;
-  label: string;
-  month: number;
-  year: number;
-  isActive: boolean;
-}
-
+// Internal pagination helpers — not API models, used by repository/query-builder layer only.
 export interface PaginationParams {
   page: number;
   pageSize: number;
