@@ -8,6 +8,8 @@ export interface GenerateReportInput {
   year: number;
   format: ReportFormat;
   collegeId?: string;
+  startDate: string;
+  endDate: string;
 }
 
 /** Single member row inside ReportData (format = "json") */

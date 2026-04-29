@@ -29,14 +29,19 @@ export const POST = apiHandler(async (req: Request) => {
   const parsed = validate(generateReportSchema, body);
   if (!parsed.success) return parsed.response;
 
-  const { year, collegeId, format } = parsed.data;
+  const { year, collegeId, format, startDate, endDate } = parsed.data;
 
   // 3. Build report data from DB — service handles all querying
   const supabase = await createSupabaseServer(req);
-  const reportData = await buildReportData({ year, collegeId, format }, supabase);
+  const reportData = await buildReportData(
+    { year, collegeId, format, startDate, endDate },
+    supabase,
+  );
 
   // 4. Return in requested format
-  const safeName = collegeId ? `college-${collegeId.slice(0, 8)}` : "all-colleges";
+  const safeName = collegeId
+    ? `college-${collegeId.slice(0, 8)}`
+    : "all-colleges";
 
   if (format === "json") {
     return successResponse(reportData);

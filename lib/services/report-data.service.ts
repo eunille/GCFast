@@ -44,7 +44,7 @@ function mapReportRow(row: Record<string, unknown>): ReportMemberRow {
 
 export async function buildReportData(
   input: GenerateReportInput,
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<ReportData> {
   let query = supabase
     .from("member_payment_summary")
@@ -52,9 +52,9 @@ export async function buildReportData(
     .order("college_name")
     .order("full_name");
 
-  // member_payment_summary has no year_ref column — view reflects current standing
-  // Filter by college only; year is used only for report metadata
   if (input.collegeId) query = query.eq("college_id", input.collegeId);
+  if (input.startDate) query = query.gte("last_payment_date", input.startDate);
+  if (input.endDate) query = query.lte("last_payment_date", input.endDate);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
@@ -63,8 +63,11 @@ export async function buildReportData(
   const members = rows.map(mapReportRow);
 
   const totalCollected = rows.reduce(
-    (sum, r) => sum + Number(r.membership_fee_amount_paid ?? 0) + Number(r.total_dues_paid ?? 0),
-    0
+    (sum, r) =>
+      sum +
+      Number(r.membership_fee_amount_paid ?? 0) +
+      Number(r.total_dues_paid ?? 0),
+    0,
   );
 
   const collegeName =
