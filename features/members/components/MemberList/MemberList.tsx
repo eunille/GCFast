@@ -4,14 +4,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { SlidersHorizontal, Plus, Users, Search } from "lucide-react";
+import { SlidersHorizontal, Users, Search } from "lucide-react";
 import { MemberDataTable } from "./MemberDataTable";
 import { getMemberColumns } from "./columns";
 import { CreateMemberModal } from "../CreateMemberModal";
+import { MemberQuickViewModal } from "../MemberQuickViewModal/MemberQuickViewModal";
 import { useMembers } from "../../hooks/useMembers";
 import type { MemberListQuery } from "@/lib/models";
 
@@ -19,10 +19,9 @@ const PAGE_SIZE = 8;
 const DEFAULT_FILTER: MemberListQuery = { page: 1, pageSize: PAGE_SIZE };
 
 export function MemberList() {
-  const router = useRouter();
   const [filter, setFilter] = useState<MemberListQuery>(DEFAULT_FILTER);
   const [search, setSearch] = useState("");
-  const [showCreate, setShowCreate] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useMembers(filter);
   const members = data?.data ?? [];
@@ -40,10 +39,7 @@ export function MemberList() {
   const handlePageChange = (next: number) =>
     setFilter((f) => ({ ...f, page: next }));
 
-  const handleView = useCallback(
-    (id: string) => router.push(`/treasurer/members/${id}`),
-    [router]
-  );
+  const handleView = useCallback((id: string) => setSelectedMemberId(id), []);
 
   const columns = getMemberColumns(handleView);
 
@@ -67,7 +63,6 @@ export function MemberList() {
             <p className="text-2xl font-bold text-foreground leading-none">
               {meta?.count ?? "—"}
             </p>
-            <p className="text-xs text-status-paid">+12 this month</p>
           </div>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent">
             <Users className="h-5 w-5 text-accent-foreground" />
@@ -96,14 +91,7 @@ export function MemberList() {
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Filters
               </Button>
-              <Button
-                size="sm"
-                className="gap-1.5 h-9 bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => setShowCreate(true)}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add member
-              </Button>
+              <CreateMemberModal />
             </div>
           </div>
 
@@ -137,9 +125,9 @@ export function MemberList() {
         </CardContent>
       </Card>
 
-      <CreateMemberModal
-        open={showCreate}
-        onClose={() => setShowCreate(false)}
+      <MemberQuickViewModal
+        memberId={selectedMemberId}
+        onClose={() => setSelectedMemberId(null)}
       />
     </div>
   );

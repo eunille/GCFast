@@ -4,9 +4,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -21,13 +21,21 @@ import { ZodError } from "zod";
 
 interface Props {
   onSubmit: (data: CreateMemberInput) => void;
-  onCancel: () => void;
   isLoading: boolean;
 }
 
 type FieldErrors = Partial<Record<keyof CreateMemberInput, string>>;
 
-export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
+function FieldWrapper({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col gap-1.5">{children}</div>;
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-xs text-destructive">{message}</p>;
+}
+
+export function CreateMemberForm({ onSubmit, isLoading }: Props) {
   const { data: colleges = [] } = useColleges();
 
   const [form, setForm] = useState<Partial<CreateMemberInput>>({
@@ -57,22 +65,26 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Full Name */}
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="cm-fullName">Full Name *</Label>
+    <form id="create-member-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+      {/* ── Required fields ──────────────────────────────────────────────────── */}
+      <FieldWrapper>
+        <Label htmlFor="cm-fullName">
+          Full Name <span className="text-destructive">*</span>
+        </Label>
         <Input
           id="cm-fullName"
           placeholder="e.g. Juan dela Cruz"
           value={form.fullName ?? ""}
           onChange={(e) => set("fullName", e.target.value)}
         />
-        {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
-      </div>
+        <FieldError message={errors.fullName} />
+      </FieldWrapper>
 
-      {/* Email */}
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="cm-email">Email *</Label>
+      <FieldWrapper>
+        <Label htmlFor="cm-email">
+          Email <span className="text-destructive">*</span>
+        </Label>
         <Input
           id="cm-email"
           type="email"
@@ -80,16 +92,14 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
           value={form.email ?? ""}
           onChange={(e) => set("email", e.target.value)}
         />
-        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-      </div>
+        <FieldError message={errors.email} />
+      </FieldWrapper>
 
-      {/* College */}
-      <div className="flex flex-col gap-1">
-        <Label>College *</Label>
-        <Select
-          value={form.collegeId ?? ""}
-          onValueChange={(v) => set("collegeId", v)}
-        >
+      <FieldWrapper>
+        <Label>
+          College <span className="text-destructive">*</span>
+        </Label>
+        <Select value={form.collegeId ?? ""} onValueChange={(v) => set("collegeId", v)}>
           <SelectTrigger>
             <SelectValue placeholder="Select college" />
           </SelectTrigger>
@@ -101,12 +111,13 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
             ))}
           </SelectContent>
         </Select>
-        {errors.collegeId && <p className="text-xs text-destructive">{errors.collegeId}</p>}
-      </div>
+        <FieldError message={errors.collegeId} />
+      </FieldWrapper>
 
-      {/* Member Type */}
-      <div className="flex flex-col gap-1">
-        <Label>Member Type *</Label>
+      <FieldWrapper>
+        <Label>
+          Member Type <span className="text-destructive">*</span>
+        </Label>
         <Select
           value={form.memberType ?? "FULL_TIME"}
           onValueChange={(v) => set("memberType", v)}
@@ -119,57 +130,51 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
             <SelectItem value="ASSOCIATE">Associate</SelectItem>
           </SelectContent>
         </Select>
-        {errors.memberType && <p className="text-xs text-destructive">{errors.memberType}</p>}
+        <FieldError message={errors.memberType} />
+      </FieldWrapper>
+
+      {/* ── Optional fields ──────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        <Separator className="flex-1" />
+        <span className="text-xs text-muted-foreground shrink-0">Optional</span>
+        <Separator className="flex-1" />
       </div>
 
-      {/* Employee ID */}
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="cm-empId">Employee ID</Label>
-        <Input
-          id="cm-empId"
-          placeholder="Optional"
-          value={form.employeeId ?? ""}
-          onChange={(e) => set("employeeId", e.target.value || undefined)}
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <FieldWrapper>
+          <Label htmlFor="cm-empId">Employee ID</Label>
+          <Input
+            id="cm-empId"
+            placeholder="e.g. EMP-001"
+            value={form.employeeId ?? ""}
+            onChange={(e) => set("employeeId", e.target.value || undefined)}
+          />
+        </FieldWrapper>
+
+        <FieldWrapper>
+          <Label htmlFor="cm-joinedAt">Joined Date</Label>
+          <Input
+            id="cm-joinedAt"
+            type="date"
+            value={form.joinedAt ?? ""}
+            onChange={(e) => set("joinedAt", e.target.value || undefined)}
+          />
+        </FieldWrapper>
       </div>
 
-      {/* Joined Date */}
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="cm-joinedAt">Joined Date</Label>
-        <Input
-          id="cm-joinedAt"
-          type="date"
-          value={form.joinedAt ?? ""}
-          onChange={(e) => set("joinedAt", e.target.value || undefined)}
-        />
-      </div>
-
-      {/* Notes */}
-      <div className="flex flex-col gap-1">
+      <FieldWrapper>
         <Label htmlFor="cm-notes">Notes</Label>
         <Input
           id="cm-notes"
-          placeholder="Optional"
+          placeholder="Any additional notes…"
           value={form.notes ?? ""}
           onChange={(e) => set("notes", e.target.value || undefined)}
         />
-      </div>
+      </FieldWrapper>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="bg-accent text-accent-foreground hover:bg-accent/90"
-        >
-          {isLoading ? "Saving…" : "Add Member"}
-        </Button>
-      </div>
     </form>
   );
 }
+
 
 
