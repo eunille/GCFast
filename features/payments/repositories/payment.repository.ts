@@ -1,50 +1,62 @@
 // features/payments/repositories/payment.repository.ts
-// Layer 2 — DATA: Only layer that calls Supabase. No JSX. No React hooks.
+// Layer 2 — DATA: Calls /api/payments via authFetch. No JSX. No React hooks.
 
-import { supabase } from "@/lib/supabase/client";
-import { mapPaymentFromDb, mapPaymentSummaryFromDb } from "./payment.mapper";
-import type { Payment, MemberPaymentSummary } from "../types/payment.types";
-import type { RecordPaymentInput } from "../types/payment.schemas";
+import { authFetch } from "@/lib/utils/auth-fetch";
+import type {
+  PaymentRecord,
+  PaymentSummaryRow,
+  RecordPaymentInput,
+  PaymentSummaryQuery,
+  PaymentHistoryQuery,
+} from "@/lib/models";
+import type { ApiSuccess, PaginationMeta } from "@/lib/models";
+
+function buildQuery(params: Record<string, string | number | boolean | undefined>): string {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== "") p.set(k, String(v));
+  }
+  const qs = p.toString();
+  return qs ? `?${qs}` : "";
+}
+
+async function parseJson<T>(res: Response): Promise<T> {
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error?.message ?? "API error");
+  return json.data as T;
+}
 
 export const paymentRepository = {
-  async getAllSummaries(collegeId?: string): Promise<MemberPaymentSummary[]> {
-    let query = supabase.from("member_payment_summary").select("*");
-
-    if (collegeId) {
-      query = query.eq("college_id", collegeId);
-    }
-
-    const { data, error } = await query;
-    if (error) throw new Error(error.message);
-    return data.map(mapPaymentSummaryFromDb);
+  /** GET /api/payments/summaries — paginated member payment summary rows */
+  async getSummaries(
+    filter: PaymentSummaryQuery = {}
+  ): Promise<{ data: PaymentSummaryRow[]; meta: PaginationMeta }> {
+    const qs = buildQuery(filter as Record<string, string | number | boolean | undefined>);
+    const res = await authFetch(`/api/payments/summaries${qs}`);
+    const json = (await res.json()) as ApiSuccess<PaymentSummaryRow[]>;
+    if (!json.success) throw new Error((json as { error?: { message?: string } }).error?.message ?? "API error");
+    return { data: json.data, meta: json.meta! };
   },
 
-  async getByMember(memberId: string): Promise<Payment[]> {
-    const { data, error } = await supabase
-      .from("payment_records")
-      .select("*")
-      .eq("member_id", memberId)
-      .order("payment_date", { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data.map(mapPaymentFromDb);
+  /** GET /api/payments/member/:memberId — payment history for one member */
+  async getByMember(
+    memberId: string,
+    filter: PaymentHistoryQuery = {}
+  ): Promise<{ data: PaymentRecord[]; meta: PaginationMeta }> {
+    const qs = buildQuery(filter as Record<string, string | number | boolean | undefined>);
+    const res = await authFetch(`/api/payments/member/${memberId}${qs}`);
+    const json = (await res.json()) as ApiSuccess<PaymentRecord[]>;
+    if (!json.success) throw new Error((json as { error?: { message?: string } }).error?.message ?? "API error");
+    return { data: json.data, meta: json.meta! };
   },
 
-  async record(input: RecordPaymentInput): Promise<Payment> {
-    const { data, error } = await supabase
-      .from("payment_records")
-      .insert({
-        member_id: input.memberId,
-        payment_type: input.paymentType,
-        amount_paid: input.amountPaid,
-        payment_date: input.paymentDate.toISOString(),
-        month_ref: input.monthRef,
-        year_ref: input.yearRef,
-      })
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return mapPaymentFromDb(data);
+  /** POST /api/payments — record a new payment */
+  async record(input: RecordPaymentInput): Promise<PaymentRecord> {
+    const res = await authFetch("/api/payments", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return parseJson<PaymentRecord>(res);
   },
 };
+

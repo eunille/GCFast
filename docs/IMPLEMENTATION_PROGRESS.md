@@ -50,18 +50,19 @@
 | Item | File | Status |
 |------|------|--------|
 | `AppShell` component | `components/layout/AppShell/AppShell.tsx` | ✅ |
-| `Sidebar` component | `components/layout/AppShell/Sidebar.tsx` | ✅ |
-| `TopNav` component | `components/layout/AppShell/TopNav.tsx` | ✅ |
+| `AppSidebar` component | `components/layout/AppShell/Sidebar.tsx` | ✅ |
 | Treasurer layout (wire up shell) | `app/(treasurer)/treasurer/layout.tsx` | ✅ |
 | Member layout (wire up shell) | `app/(member)/member/layout.tsx` | ✅ |
 
 **Notes:**
-- `AppShell` handles desktop sidebar (always visible on `md+`) and mobile drawer overlay with backdrop
-- `Sidebar` highlights active route via `usePathname()`, shows user email/role, sign out via `useSignOut()`
-- `TopNav` is mobile-only (`md:hidden`) — hamburger toggle + page title derived from URL segment
-- Treasurer nav: Overview, Members, Payments, Reports
-- Member nav: My Dashboard
-- All colors/spacing from `@/theme` tokens; ShadCN `Button` and `Separator` used
+- Rebuilt with shadcn `Sidebar` primitives — `SidebarProvider`, `SidebarTrigger`, `SidebarContent`, `SidebarFooter`
+- `AppShell` wraps with `SidebarProvider`; sidebar is `position:fixed`, content offset via in-flow spacer
+- Sidebar toggle (collapse/expand) wired via `SidebarTrigger` in top bar
+- White sidebar background via `--sidebar: #ffffff` CSS token; active item uses `bg-accent`
+- `AppSidebar` shows logo, nav items with icons, user initials avatar + role + logout button in footer
+- Treasurer nav: Dashboard, Members, Payments, Reports (with `lucide-react` icons)
+- Member nav: My Dashboard (with `lucide-react` icon)
+- `TopNav.tsx` removed — replaced by shadcn's built-in `SidebarTrigger` in the top bar
 
 ---
 
@@ -85,44 +86,68 @@
 
 ---
 
-## Phase 4 — Treasurer Dashboard Overview ⬜
+## Phase 4 — Treasurer Dashboard Overview ✅
 
 **Goal:** Treasurer can see aggregate collection stats at a glance.
 
 | Item | File | Status |
 |------|------|--------|
-| `useTreasurerDashboard` hook | `features/payments/hooks/useTreasurerDashboard.ts` | ⬜ |
-| `DashboardStatsCard` component | `features/payments/components/DashboardStatsCard/` | ⬜ |
-| `CollectionProgressBar` component | `features/payments/components/CollectionProgressBar/` | ⬜ |
-| Overview page | `app/(treasurer)/overview/page.tsx` | ⬜ |
+| `useTreasurerDashboard` hook | `features/payments/hooks/useTreasurerDashboard.ts` | ✅ |
+| `DashboardStatsCard` component | `features/payments/components/DashboardStatsCard/` | ✅ |
+| `CollectionProgressBar` component | `features/payments/components/CollectionProgressBar/` | ✅ |
+| Overview page | `app/(treasurer)/treasurer/overview/page.tsx` | ✅ |
+
+**Notes:**
+- `useTreasurerDashboard` fetches `GET /api/dashboard/treasurer`, stale time 60s
+- 4 stat cards: Total Members, Total Collected (₱), With Balance, Complete (with collection rate %)
+- Collection by college section shows each college's total collected
+- Quick links to Members and Payments pages
 
 ---
 
-## Phase 5 — Member Management (Treasurer) ⬜
+## Phase 5 — Member Management (Treasurer) ✅
 
 **Goal:** Treasurer can view, create, edit, and deactivate members.
 
 | Item | File | Status |
 |------|------|--------|
-| `MemberList` component | `features/members/components/MemberList/` | ⬜ |
-| `MemberListFilter` component | `features/members/components/MemberList/MemberListFilter.tsx` | ⬜ |
-| `CreateMemberModal` component | `features/members/components/CreateMemberModal/` | ⬜ |
-| `EditMemberModal` component | `features/members/components/EditMemberModal/` | ⬜ |
-| Members page | `app/(treasurer)/members/page.tsx` | ⬜ |
-| Member detail page | `app/(treasurer)/members/[id]/page.tsx` | ⬜ |
+| `useMembers(filter)` hook | `features/members/hooks/useMembers.ts` | ✅ |
+| `useCreateMember` hook | `features/members/hooks/useCreateMember.ts` | ✅ |
+| `useMember(id)` hook | `features/members/hooks/useMember.ts` | ✅ |
+| `useUpdateMember(id)` hook | `features/members/hooks/useUpdateMember.ts` | ✅ |
+| `useDeactivateMember(id)` hook | `features/members/hooks/useDeactivateMember.ts` | ✅ |
+| `MemberList` component | `features/members/components/MemberList/` | ✅ |
+| `MemberListFilter` component | `features/members/components/MemberList/MemberListFilter.tsx` | ✅ |
+| `MemberQuickViewModal` component | `features/members/components/MemberQuickViewModal/` | ✅ |
+| `CreateMemberModal` component | `features/members/components/CreateMemberModal/` | ✅ |
+| `EditMemberModal` component | `features/members/components/EditMemberModal/` | ✅ |
+| Members page | `app/(treasurer)/treasurer/members/page.tsx` | ✅ |
+| Member detail page | `app/(treasurer)/members/[id]/page.tsx` | ✅ |
+
+**Notes:**
+- `memberRepository` uses `authFetch` → calls `GET/POST/PATCH /api/members` (not Supabase directly)
+- `MemberList` has debounced search (300ms), college/type/active filters, pagination, Add Member button
+- `MemberListFilter` wired with `useColleges()` for college dropdown
+- `MemberQuickViewModal` opens from table Actions dropdown with full member info
+- `CreateMemberModal` is self-contained with `DialogTrigger` pattern
+- Detail page: profile card, Edit/Invite/Deactivate buttons, confirmation dialog, payment history placeholder
 
 ---
 
-## Phase 6 — Payment Management (Treasurer) ⬜
+## Phase 6 — Payment Management (Treasurer) 🚧
 
 **Goal:** Treasurer can view and record payment transactions.
 
 | Item | File | Status |
 |------|------|--------|
-| `PaymentTable` component | `features/payments/components/PaymentTable/` | ⬜ |
-| `RecordPaymentModal` component | `features/payments/components/RecordPaymentModal/` | ⬜ |
-| `PaymentStatusBadge` component | `features/payments/components/PaymentStatusBadge/` | ⬜ |
-| Payments page | `app/(treasurer)/payments/page.tsx` | ⬜ |
+| `usePaymentSummaries(filter)` hook | `features/payments/hooks/usePaymentSummaries.ts` | 🚧 |
+| `usePaymentHistory(memberId)` hook | `features/payments/hooks/usePaymentHistory.ts` | 🚧 |
+| `useRecordPayment` hook | `features/payments/hooks/useRecordPayment.ts` | ✅ |
+| `PaymentStatusBadge` component | `features/payments/components/PaymentStatusBadge/` | 🚧 |
+| `PaymentHistoryTable` component | `features/payments/components/PaymentHistoryTable/` | 🚧 |
+| `PaymentTable` component | `features/payments/components/PaymentTable/` | 🚧 |
+| `RecordPaymentModal` component | `features/payments/components/RecordPaymentModal/` | 🚧 |
+| Payments page | `app/(treasurer)/treasurer/payments/page.tsx` | 🚧 |
 
 ---
 

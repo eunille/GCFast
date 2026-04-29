@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #2C3E50;
@@ -27,6 +29,14 @@
   --status-paid-bg: #D5F5E3;
   --status-outstanding: #E74C3C;
   --status-outstanding-bg: #FADBD8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2C3E50;
+  --sidebar-primary: #2E86C1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #EBF5FB;
+  --sidebar-accent-foreground: #2E86C1;
+  --sidebar-border: #D6E4F0;
+  --sidebar-ring: #2E86C1;
 }
 
 @theme inline {
@@ -65,6 +75,14 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
 }
 
 *, *::before, *::after {
@@ -75,4 +93,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+}
+
+.dark {
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
