@@ -28,12 +28,24 @@ export interface RecordPaymentInput {
   notes?: string;
 }
 
+/**
+ * GET /api/payments — extended record with joined member + period data.
+ * Returned when the API route joins members and academic_periods.
+ */
+export interface PaymentTransaction extends PaymentRecord {
+  memberName: string;
+  memberEmail: string;
+  periodLabel: string | null; // null for MEMBERSHIP_FEE
+}
+
 /** Query params for GET /api/payments */
 export interface PaymentRecordQuery {
   page?: number;
   pageSize?: number;
   memberId?: string;
   paymentType?: PaymentType;
+  collegeId?: string;
+  status?: "COMPLETE" | "HAS_BALANCE";
 }
 
 /** Query params for GET /api/payments/member/:memberId */

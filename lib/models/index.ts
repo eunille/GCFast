@@ -7,7 +7,7 @@ export type { AuthMe, AuthUser, InviteInput } from "./auth.models";
 export type { College } from "./college.models";
 export type { AcademicPeriod } from "./academic-period.models";
 export type { Member, CreateMemberInput, UpdateMemberInput, MemberListQuery } from "./member.models";
-export type { PaymentRecord, RecordPaymentInput, PaymentRecordQuery, PaymentHistoryQuery, PaymentSummaryRow, PaymentSummaryQuery } from "./payment.models";
+export type { PaymentRecord, PaymentTransaction, RecordPaymentInput, PaymentRecordQuery, PaymentHistoryQuery, PaymentSummaryRow, PaymentSummaryQuery } from "./payment.models";
 export type { TreasurerDashboard, MemberDashboard } from "./dashboard.models";
 export type { DuesConfig, CreateDuesConfigInput, CurrentRateEntry, CurrentRates } from "./dues-config.models";
 export type { GenerateReportInput, ReportMemberRow, ReportData } from "./report.models";

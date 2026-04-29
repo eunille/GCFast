@@ -14,6 +14,7 @@ export function useRecordPayment() {
     mutationFn: (input: RecordPaymentInput) => paymentRepository.record(input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["payment-records"] });
       queryClient.invalidateQueries({ queryKey: ["payment-summaries"] });
       queryClient.invalidateQueries({ queryKey: ["payment-history", variables.memberId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "treasurer"] });
