@@ -4,13 +4,8 @@
 export const dynamic = "force-dynamic";
 
 import { MemberList } from "@/features/members/components/MemberList";
-import { spacing } from "@/theme";
 
 export default function TreasurerMembersPage() {
-  return (
-    <main style={{ padding: spacing[6] }}>
-      <MemberList />
-    </main>
-  );
+  return <MemberList />;
 }
 
