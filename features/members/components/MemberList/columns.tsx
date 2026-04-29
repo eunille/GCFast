@@ -24,8 +24,11 @@ function getInitials(name: string) {
     .join("");
 }
 
-/** Returns column definitions. Pass `onView` to wire up the actions column. */
-export function getMemberColumns(onView: (id: string) => void): ColumnDef<Member>[] {
+/** Returns column definitions. Pass `onView` to open the quick-view modal and `onNavigate` to go to the full detail page. */
+export function getMemberColumns(
+  onView: (id: string) => void,
+  onNavigate: (id: string) => void,
+): ColumnDef<Member>[] {
   return [
     // ── Select column ──────────────────────────────────────────────────────────
     {
@@ -101,10 +104,32 @@ export function getMemberColumns(onView: (id: string) => void): ColumnDef<Member
       },
     },
 
+    // ── Member Type ────────────────────────────────────────────────────────────
+    {
+      accessorKey: "memberType",
+      header: "Member Type",
+      cell: ({ row }) => (
+        <p className="text-sm text-foreground whitespace-nowrap">
+          {row.original.memberType === "FULL_TIME" ? "Full-Time" : "Associate"}
+        </p>
+      ),
+    },
+
+    // ── Employee ID ────────────────────────────────────────────────────────────
+    {
+      accessorKey: "employeeId",
+      header: "Employee ID",
+      cell: ({ row }) => (
+        <p className="text-sm text-muted-foreground">
+          {row.original.employeeId ?? "—"}
+        </p>
+      ),
+    },
+
     // ── Payment Status ─────────────────────────────────────────────────────────
     {
       id: "paymentStatus",
-      header: "Payment Status",
+      header: "Status",
       cell: ({ row }) => <StandingBadge isActive={row.original.isActive} />,
     },
 
@@ -122,7 +147,10 @@ export function getMemberColumns(onView: (id: string) => void): ColumnDef<Member
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onView(row.original.id)}>
-                View Profile
+                Quick View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onNavigate(row.original.id)}>
+                View Full Profile
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

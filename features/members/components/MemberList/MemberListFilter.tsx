@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "lucide-react";
 import { useColleges } from "@/lib/hooks/useColleges";
-import { colors, spacing } from "@/theme";
 import type { MemberListQuery } from "@/lib/models";
 
 interface Props {
@@ -37,17 +37,16 @@ export function MemberListFilter({ filter, onChange }: Props) {
   }, [searchValue]);
 
   return (
-    <div
-      className="flex flex-wrap gap-2"
-      style={{ marginBottom: spacing[4] }}
-    >
-      <Input
-        placeholder="Search by name or email…"
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        className="w-60"
-        style={{ color: colors.text.primary }}
-      />
+    <div className="flex flex-wrap gap-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
+        <Input
+          placeholder="Search by name or email…"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          className="pl-9 h-9 w-64"
+        />
+      </div>
 
       <Select
         value={filter.collegeId ?? "__all"}
