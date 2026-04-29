@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { useColleges } from "@/lib/hooks/useColleges";
 import { createMemberSchema } from "../../types/member.schemas";
-import { colors, spacing } from "@/theme";
 import type { CreateMemberInput } from "@/lib/models";
 import { ZodError } from "zod";
 
@@ -58,7 +57,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: spacing[4] }}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* Full Name */}
       <div className="flex flex-col gap-1">
         <Label htmlFor="cm-fullName">Full Name *</Label>
@@ -68,7 +67,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
           value={form.fullName ?? ""}
           onChange={(e) => set("fullName", e.target.value)}
         />
-        {errors.fullName && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.fullName}</p>}
+        {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
       </div>
 
       {/* Email */}
@@ -81,7 +80,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
           value={form.email ?? ""}
           onChange={(e) => set("email", e.target.value)}
         />
-        {errors.email && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.email}</p>}
+        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
       </div>
 
       {/* College */}
@@ -102,7 +101,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
             ))}
           </SelectContent>
         </Select>
-        {errors.collegeId && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.collegeId}</p>}
+        {errors.collegeId && <p className="text-xs text-destructive">{errors.collegeId}</p>}
       </div>
 
       {/* Member Type */}
@@ -120,7 +119,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
             <SelectItem value="ASSOCIATE">Associate</SelectItem>
           </SelectContent>
         </Select>
-        {errors.memberType && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.memberType}</p>}
+        {errors.memberType && <p className="text-xs text-destructive">{errors.memberType}</p>}
       </div>
 
       {/* Employee ID */}
@@ -164,7 +163,7 @@ export function CreateMemberForm({ onSubmit, onCancel, isLoading }: Props) {
         <Button
           type="submit"
           disabled={isLoading}
-          style={{ backgroundColor: colors.brand.accent }}
+          className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
           {isLoading ? "Saving…" : "Add Member"}
         </Button>
