@@ -17,6 +17,7 @@ const listQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   memberId: z.string().uuid().optional(),
   paymentType: z.enum(["MEMBERSHIP_FEE", "MONTHLY_DUES"]).optional(),
+  collegeId: z.string().uuid().optional(),
 });
 
 export const GET = apiHandler(async (req: Request) => {
@@ -32,23 +33,32 @@ export const GET = apiHandler(async (req: Request) => {
   const parsed = validate(listQuerySchema, Object.fromEntries(searchParams));
   if (!parsed.success) return parsed.response;
 
-  const { page, pageSize, memberId, paymentType } = parsed.data;
+  const { page, pageSize, memberId, paymentType, collegeId } = parsed.data;
   const { from, to } = toRange({ page, pageSize });
 
   const supabase = await createSupabaseServer(req);
 
-  // 3. Query payment records
+  // 3. Query payment records — join members + academic_periods for display
   let query = supabase
     .from("payment_records")
-    .select("*", { count: "exact" })
+    .select(
+      `*,
+       members!member_id(id, full_name, email, college_id),
+       academic_periods!academic_period_id(id, label)`,
+      { count: "exact" }
+    )
     .order("created_at", { ascending: false })
     .range(from, to);
 
   if (memberId) query = query.eq("member_id", memberId);
   if (paymentType) query = query.eq("payment_type", paymentType);
+  if (collegeId) query = query.eq("members.college_id", collegeId);
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
+
+  type MemberJoin = { id: string; full_name: string; email: string; college_id: string } | null;
+  type PeriodJoin = { id: string; label: string } | null;
 
   const mapped = (data ?? []).map((row: Record<string, unknown>) => ({
     id: row.id,
@@ -61,6 +71,10 @@ export const GET = apiHandler(async (req: Request) => {
     notes: row.notes ?? null,
     recordedBy: row.recorded_by,
     createdAt: row.created_at,
+    // Joined fields
+    memberName: (row.members as MemberJoin)?.full_name ?? "",
+    memberEmail: (row.members as MemberJoin)?.email ?? "",
+    periodLabel: (row.academic_periods as PeriodJoin)?.label ?? null,
   }));
 
   return successResponse(mapped, buildMeta(count ?? 0, { page, pageSize }));
