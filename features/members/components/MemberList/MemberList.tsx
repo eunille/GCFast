@@ -4,12 +4,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { SlidersHorizontal, Users, Search } from "lucide-react";
+import { Users } from "lucide-react";
 import { MemberDataTable } from "./MemberDataTable";
 import { getMemberColumns } from "./columns";
+import { MemberListFilter } from "./MemberListFilter";
 import { CreateMemberModal } from "../CreateMemberModal";
 import { MemberQuickViewModal } from "../MemberQuickViewModal/MemberQuickViewModal";
 import { useMembers } from "../../hooks/useMembers";
@@ -19,8 +19,8 @@ const PAGE_SIZE = 8;
 const DEFAULT_FILTER: MemberListQuery = { page: 1, pageSize: PAGE_SIZE };
 
 export function MemberList() {
+  const router = useRouter();
   const [filter, setFilter] = useState<MemberListQuery>(DEFAULT_FILTER);
-  const [search, setSearch] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useMembers(filter);
@@ -30,18 +30,16 @@ export function MemberList() {
   const totalPages = meta ? Math.ceil(meta.count / PAGE_SIZE) : 1;
   const currentPage = filter.page ?? 1;
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearch(val);
-    setFilter((f) => ({ ...f, search: val || undefined, page: 1 }));
-  };
-
   const handlePageChange = (next: number) =>
     setFilter((f) => ({ ...f, page: next }));
 
   const handleView = useCallback((id: string) => setSelectedMemberId(id), []);
+  const handleNavigate = useCallback(
+    (id: string) => router.push(`/treasurer/members/${id}`),
+    [router]
+  );
 
-  const columns = getMemberColumns(handleView);
+  const columns = getMemberColumns(handleView, handleNavigate);
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,25 +84,11 @@ export function MemberList() {
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1.5 h-9">
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                Filters
-              </Button>
-              <CreateMemberModal />
-            </div>
+            <CreateMemberModal />
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-            <Input
-              placeholder="Search"
-              value={search}
-              onChange={handleSearch}
-              className="pl-9 h-9"
-            />
-          </div>
+          {/* Search + filters */}
+          <MemberListFilter filter={filter} onChange={setFilter} />
 
           {isError && (
             <p className="text-sm text-destructive">

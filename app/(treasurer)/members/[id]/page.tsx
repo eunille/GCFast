@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -21,7 +22,6 @@ import { EditMemberModal } from "@/features/members/components/EditMemberModal";
 import { useMember } from "@/features/members/hooks/useMember";
 import { useDeactivateMember } from "@/features/members/hooks/useDeactivateMember";
 import { toast } from "sonner";
-import { colors, spacing } from "@/theme";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -38,7 +38,7 @@ export default function MemberDetailPage({ params }: Props) {
 
   if (isLoading) {
     return (
-      <main style={{ padding: spacing[6] }}>
+      <main className="p-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-64 w-full" />
       </main>
@@ -47,10 +47,8 @@ export default function MemberDetailPage({ params }: Props) {
 
   if (isError || !member) {
     return (
-      <main style={{ padding: spacing[6] }}>
-        <p style={{ color: colors.status.outstanding }}>
-          Member not found or failed to load.
-        </p>
+      <main className="p-6 max-w-2xl mx-auto">
+        <p className="text-destructive">Member not found or failed to load.</p>
         <Button variant="outline" className="mt-4" onClick={() => router.back()}>
           Go Back
         </Button>
@@ -72,13 +70,13 @@ export default function MemberDetailPage({ params }: Props) {
     });
 
   return (
-    <main style={{ padding: spacing[6], maxWidth: 640, margin: "0 auto" }}>
+    <main className="p-6 max-w-2xl mx-auto flex flex-col gap-6">
       {/* Back link */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => router.push("/treasurer/members")}
-        style={{ marginBottom: spacing[4], color: colors.brand.accent }}
+        className="self-start text-accent hover:text-accent/80"
       >
         ← Back to Members
       </Button>
@@ -87,24 +85,40 @@ export default function MemberDetailPage({ params }: Props) {
       <MemberProfileCard member={member} />
 
       {/* Action row */}
-      <div className="flex gap-2 mt-4">
+      <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => setShowEdit(true)}
-          style={{ backgroundColor: colors.brand.accent }}
+          className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
           Edit Member
         </Button>
+
+        {!member.profileId && (
+          <Button variant="outline" disabled title="Send invite email to this member">
+            Invite to Portal
+          </Button>
+        )}
 
         {member.isActive && (
           <Button
             variant="outline"
             onClick={() => setShowDeactivate(true)}
-            style={{ borderColor: colors.status.outstanding, color: colors.status.outstanding }}
+            className="border-destructive text-destructive hover:bg-destructive/5"
           >
             Deactivate
           </Button>
         )}
       </div>
+
+      {/* Payment history placeholder */}
+      <Card>
+        <CardContent className="p-5">
+          <p className="font-semibold text-base text-foreground mb-1">Payment History</p>
+          <p className="text-sm text-muted-foreground">
+            Payment history will be available in a future update.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Edit modal */}
       <EditMemberModal
@@ -119,12 +133,10 @@ export default function MemberDetailPage({ params }: Props) {
           <DialogHeader>
             <DialogTitle>Deactivate Member?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm" style={{ color: colors.text.secondary }}>
+          <p className="text-sm text-muted-foreground">
             This will deactivate{" "}
-            <span className="font-medium" style={{ color: colors.text.primary }}>
-              {member.fullName}
-            </span>
-            . Payment history is preserved but no new payments can be recorded.
+            <span className="font-medium text-foreground">{member.fullName}</span>.
+            Payment history is preserved but no new payments can be recorded.
             This action cannot be undone from the UI.
           </p>
           <DialogFooter className="gap-2">
@@ -136,9 +148,9 @@ export default function MemberDetailPage({ params }: Props) {
               Cancel
             </Button>
             <Button
+              variant="destructive"
               disabled={isDeactivating}
               onClick={handleDeactivate}
-              style={{ backgroundColor: colors.status.outstanding }}
             >
               {isDeactivating ? "Deactivating…" : "Yes, Deactivate"}
             </Button>
