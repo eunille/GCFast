@@ -19,8 +19,11 @@ import {
 } from "@/components/ui/dialog";
 import { MemberProfileCard } from "@/features/members/components/MemberDashboard/MemberProfileCard";
 import { EditMemberModal } from "@/features/members/components/EditMemberModal";
+import { PaymentHistoryTable } from "@/features/payments/components/PaymentHistoryTable";
+import { RecordPaymentModal } from "@/features/payments/components/RecordPaymentModal";
 import { useMember } from "@/features/members/hooks/useMember";
 import { useDeactivateMember } from "@/features/members/hooks/useDeactivateMember";
+import { usePaymentHistory } from "@/features/payments/hooks/usePaymentHistory";
 import { toast } from "sonner";
 
 interface Props {
@@ -35,6 +38,9 @@ export default function MemberDetailPage({ params }: Props) {
 
   const [showEdit, setShowEdit]           = useState(false);
   const [showDeactivate, setShowDeactivate] = useState(false);
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
+
+  const { data: paymentHistoryResult, isLoading: isLoadingPayments } = usePaymentHistory(id);
 
   if (isLoading) {
     return (
@@ -93,6 +99,15 @@ export default function MemberDetailPage({ params }: Props) {
           Edit Member
         </Button>
 
+        {member.isActive && (
+          <Button
+            variant="outline"
+            onClick={() => setShowRecordPayment(true)}
+          >
+            Record Payment
+          </Button>
+        )}
+
         {!member.profileId && (
           <Button variant="outline" disabled title="Send invite email to this member">
             Invite to Portal
@@ -110,13 +125,14 @@ export default function MemberDetailPage({ params }: Props) {
         )}
       </div>
 
-      {/* Payment history placeholder */}
+      {/* Payment history */}
       <Card>
         <CardContent className="p-5">
-          <p className="font-semibold text-base text-foreground mb-1">Payment History</p>
-          <p className="text-sm text-muted-foreground">
-            Payment history will be available in a future update.
-          </p>
+          <p className="font-semibold text-base text-foreground mb-4">Payment History</p>
+          <PaymentHistoryTable
+            payments={paymentHistoryResult?.data ?? []}
+            isLoading={isLoadingPayments}
+          />
         </CardContent>
       </Card>
 
@@ -125,6 +141,13 @@ export default function MemberDetailPage({ params }: Props) {
         member={member}
         open={showEdit}
         onClose={() => setShowEdit(false)}
+      />
+
+      {/* Record payment modal */}
+      <RecordPaymentModal
+        memberId={id}
+        open={showRecordPayment}
+        onClose={() => setShowRecordPayment(false)}
       />
 
       {/* Deactivate confirm dialog */}
