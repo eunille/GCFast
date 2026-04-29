@@ -5,7 +5,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { colors, typography, shadows } from "@/theme";
 
 interface Props {
   title?: string;
@@ -15,21 +14,14 @@ interface Props {
 
 export function TopNav({ title, onMenuToggle, isMobileMenuOpen }: Props) {
   return (
-    <header
-      className="flex items-center gap-4 px-4 h-14 shrink-0 md:hidden"
-      style={{
-        background: colors.surface.page,
-        boxShadow: shadows.sm,
-        borderBottom: `1px solid ${colors.brand.subtle}`,
-      }}
-    >
+    <header className="flex items-center gap-4 px-4 h-14 shrink-0 md:hidden bg-background shadow-sm border-b border-border">
       {/* Hamburger */}
       <Button
         variant="ghost"
         size="icon"
         aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         onClick={onMenuToggle}
-        style={{ color: colors.brand.primary }}
+        className="text-primary"
       >
         {isMobileMenuOpen ? (
           // X icon
@@ -51,13 +43,7 @@ export function TopNav({ title, onMenuToggle, isMobileMenuOpen }: Props) {
 
       {/* Page title */}
       {title && (
-        <span
-          style={{
-            color: colors.brand.primary,
-            fontSize: typography.fontSize.base,
-            fontWeight: typography.fontWeight.semibold,
-          }}
-        >
+        <span className="text-base font-semibold text-primary">
           {title}
         </span>
       )}

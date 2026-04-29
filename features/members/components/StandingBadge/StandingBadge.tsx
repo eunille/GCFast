@@ -1,7 +1,8 @@
 // features/members/components/StandingBadge/StandingBadge.tsx
-// Layer 4 — PRESENTATIONAL: Active/Inactive badge using theme tokens
+// Layer 4 — PRESENTATIONAL: Paid/Not Paid badge — outlined style matching Figma
 
-import { colors } from "@/theme";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils/cn";
 
 interface Props {
   isActive: boolean;
@@ -9,15 +10,16 @@ interface Props {
 
 export function StandingBadge({ isActive }: Props) {
   return (
-    <span
-      style={{
-        backgroundColor: isActive ? colors.status.paidBg : colors.status.outstandingBg,
-        color: isActive ? colors.status.paid : colors.status.outstanding,
-      }}
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+    <Badge
+      className={cn(
+        "rounded-md px-2.5 py-0.5 text-xs font-semibold border",
+        isActive
+          ? "bg-status-paid-bg text-status-paid border-status-paid"
+          : "bg-status-outstanding-bg text-status-outstanding border-status-outstanding"
+      )}
     >
-      {isActive ? "Active" : "Inactive"}
-    </span>
+      {isActive ? "Paid" : "Not Paid"}
+    </Badge>
   );
 }
 

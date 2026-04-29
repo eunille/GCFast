@@ -7,7 +7,6 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar, type NavItem } from "./Sidebar";
 import { TopNav } from "./TopNav";
-import { colors } from "@/theme";
 
 interface Props {
   children: React.ReactNode;
@@ -25,7 +24,7 @@ export function AppShell({ children, navItems }: Props) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: colors.surface.stripe }}>
+    <div className="flex h-screen overflow-hidden bg-muted">
       {/* Desktop sidebar — always visible on md+ */}
       <div className="hidden md:flex md:flex-col md:h-full">
         <Sidebar navItems={navItems} />
@@ -57,10 +56,7 @@ export function AppShell({ children, navItems }: Props) {
         />
 
         {/* Page content */}
-        <main
-          className="flex-1 overflow-y-auto p-6"
-          style={{ background: colors.surface.stripe }}
-        >
+        <main className="flex-1 overflow-y-auto p-6 bg-muted">
           {children}
         </main>
       </div>
