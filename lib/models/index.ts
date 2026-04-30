@@ -10,4 +10,4 @@ export type { Member, CreateMemberInput, UpdateMemberInput, MemberListQuery } fr
 export type { PaymentRecord, PaymentTransaction, RecordPaymentInput, PaymentRecordQuery, PaymentHistoryQuery, PaymentSummaryRow, PaymentSummaryQuery } from "./payment.models";
 export type { TreasurerDashboard, MemberDashboard } from "./dashboard.models";
 export type { DuesConfig, CreateDuesConfigInput, CurrentRateEntry, CurrentRates } from "./dues-config.models";
-export type { GenerateReportInput, ReportMemberRow, ReportData } from "./report.models";
+export type { GenerateReportInput, ReportType, CollegeBreakdownRow, PaymentSummaryReport, OutstandingMemberRow, OutstandingBalanceReport, MembershipStatusRow, MembershipStatusReport, MonthlyCollectionRow, MonthlyCollectionReport, MemberStandingRow, MemberStandingReport, ReportResult, ReportData, ReportMemberRow } from "./report.models";
