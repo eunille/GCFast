@@ -1,15 +1,27 @@
 // components/layout/AppShell/Sidebar.tsx
-// Layer 4 — PRESENTATIONAL: App sidebar navigation
+// Layer 4 — PRESENTATIONAL: App sidebar navigation (shadcn Sidebar primitives)
 
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { LogOut } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+} from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
-import { colors, typography, radius } from "@/theme";
+import { cn } from "@/lib/utils/cn";
 
 export interface NavItem {
   href: string;
@@ -21,132 +33,118 @@ interface Props {
   navItems: NavItem[];
 }
 
-export function Sidebar({ navItems }: Props) {
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+export function AppSidebar({ navItems }: Props) {
   const pathname = usePathname();
   const { user } = useAuth();
   const { signOut } = useSignOut();
 
+  const displayName = user?.email?.split("@")[0] ?? "User";
+  const roleLabel =
+    user?.role
+      ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
+      : "";
+
   return (
-    <aside
-      className="flex flex-col h-full w-64 shrink-0"
-      style={{ background: colors.brand.primary }}
-    >
-      {/* Logo */}
-      <div
-        className="flex items-center gap-3 px-6 py-5"
-        style={{ borderBottom: `1px solid rgba(255,255,255,0.12)` }}
-      >
-        <div
-          className="flex items-center justify-center w-9 h-9 shrink-0"
-          style={{
-            background: colors.brand.accent,
-            borderRadius: radius.lg,
-          }}
-        >
-          <span
-            style={{
-              color: colors.surface.page,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
-            G
-          </span>
-        </div>
-        <div>
-          <p
-            style={{
-              color: colors.surface.page,
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.bold,
-              lineHeight: "1.2",
-            }}
-          >
-            GFAST-MPTS
-          </p>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.55)",
-              fontSize: typography.fontSize.xs,
-            }}
-          >
-            Payment Tracker
-          </p>
-        </div>
-      </div>
-
-      {/* Nav links */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors"
-              style={{
-                background: isActive
-                  ? "rgba(255,255,255,0.15)"
-                  : "transparent",
-                color: isActive
-                  ? colors.surface.page
-                  : "rgba(255,255,255,0.65)",
-                fontWeight: isActive
-                  ? typography.fontWeight.semibold
-                  : typography.fontWeight.normal,
-                borderRadius: radius.md,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              {item.icon && <span className="w-4 h-4 shrink-0">{item.icon}</span>}
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <Separator style={{ background: "rgba(255,255,255,0.12)" }} />
-
-      {/* User + sign out */}
-      <div className="px-4 py-4 space-y-3">
-        {user && (
-          <div className="px-2">
-            <p
-              style={{
-                color: colors.surface.page,
-                fontSize: typography.fontSize.sm,
-                fontWeight: typography.fontWeight.medium,
-              }}
-              className="truncate"
-            >
-              {user.email}
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border">
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <SidebarHeader className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full  overflow-hidden">
+            <Image
+              src="/gcfast_logo.png"
+              alt="GFAST"
+              width={40}
+              height={40}
+              className="object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+            <span className="text-sm font-bold text-white hidden fallback-visible">GC</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-sidebar-foreground leading-tight">
+              GFAST-MPTS
             </p>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.55)",
-                fontSize: typography.fontSize.xs,
-              }}
-            >
-              {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+            <p className="text-xs text-muted-foreground leading-tight">
+              Treasurer Portal
             </p>
           </div>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          style={{
-            borderColor: "rgba(255,255,255,0.25)",
-            color: colors.surface.page,
-            background: "transparent",
-            fontSize: typography.fontSize.sm,
-          }}
-          onClick={signOut}
-        >
-          Sign out
-        </Button>
-      </div>
-    </aside>
+        </div>
+      </SidebarHeader>
+
+      <SidebarSeparator />
+
+      {/* ── Nav ───────────────────────────────────────────────────────────── */}
+      <SidebarContent className="px-2 py-2">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className={cn(
+                        "h-10 gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <Link href={item.href}>
+                        {item.icon && (
+                          <span className="h-4 w-4 shrink-0">{item.icon}</span>
+                        )}
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      {/* ── Footer: user + sign out ────────────────────────────────────────── */}
+      <SidebarFooter className="px-3 py-3">
+        <SidebarSeparator className="mb-3" />
+        <div className="flex items-center gap-3 px-2">
+          {/* Avatar */}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-semibold select-none">
+            {getInitials(displayName)}
+          </div>
+
+          {/* Name + role */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate capitalize">
+              {displayName}
+            </p>
+            <p className="text-xs text-muted-foreground">{roleLabel}</p>
+          </div>
+
+          {/* Sign out */}
+          <button
+            onClick={signOut}
+            aria-label="Sign out"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
+

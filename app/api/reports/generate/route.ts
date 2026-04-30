@@ -29,14 +29,18 @@ export const POST = apiHandler(async (req: Request) => {
   const parsed = validate(generateReportSchema, body);
   if (!parsed.success) return parsed.response;
 
-  const { year, collegeId, format } = parsed.data;
+  const { startDate, endDate, collegeId, format, reportType } = parsed.data;
 
   // 3. Build report data from DB — service handles all querying
   const supabase = await createSupabaseServer(req);
-  const reportData = await buildReportData({ year, collegeId, format }, supabase);
+  const reportData = await buildReportData(
+    { reportType, startDate, endDate, collegeId, format },
+    supabase
+  );
 
   // 4. Return in requested format
-  const safeName = collegeId ? `college-${collegeId.slice(0, 8)}` : "all-colleges";
+  const safeName   = collegeId ? `college-${collegeId.slice(0, 8)}` : "all-colleges";
+  const dateRange  = `${startDate}-to-${endDate}`;
 
   if (format === "json") {
     return successResponse(reportData);
@@ -49,7 +53,7 @@ export const POST = apiHandler(async (req: Request) => {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="gfast-report-${year}-${safeName}.xlsx"`,
+        "Content-Disposition": `attachment; filename="gfast-report-${dateRange}-${safeName}.xlsx"`,
         "Cache-Control": "no-store",
       },
     });
@@ -61,7 +65,7 @@ export const POST = apiHandler(async (req: Request) => {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="gfast-report-${year}-${safeName}.pdf"`,
+      "Content-Disposition": `attachment; filename="gfast-report-${dateRange}-${safeName}.pdf"`,
       "Cache-Control": "no-store",
     },
   });

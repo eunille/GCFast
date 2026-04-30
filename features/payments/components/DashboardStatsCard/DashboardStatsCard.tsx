@@ -1,65 +1,43 @@
 // features/payments/components/DashboardStatsCard/DashboardStatsCard.tsx
-// Layer 4 — PRESENTATIONAL: A single stat tile (label + number + optional sub-label)
+// Layer 4 — PRESENTATIONAL: A single stat tile (label + number + optional sub-label + icon)
 
 import { Card, CardContent } from "@/components/ui/card";
-import { colors, typography, radius, shadows } from "@/theme";
+import { cn } from "@/lib/utils/cn";
+import type { ReactNode } from "react";
 
 interface Props {
   label: string;
   value: string | number;
   subLabel?: string;
   accent?: "default" | "success" | "danger";
+  icon?: ReactNode;
 }
 
-const accentColor: Record<NonNullable<Props["accent"]>, string> = {
-  default: colors.brand.accent,
-  success: colors.status.paid,
-  danger:  colors.status.outstanding,
+const valueClass: Record<NonNullable<Props["accent"]>, string> = {
+  default: "text-accent",
+  success: "text-status-paid",
+  danger:  "text-status-outstanding",
 };
 
-export function DashboardStatsCard({ label, value, subLabel, accent = "default" }: Props) {
-  const valueColor = accentColor[accent];
-
+export function DashboardStatsCard({ label, value, subLabel, accent = "default", icon }: Props) {
   return (
-    <Card
-      style={{
-        background: colors.surface.page,
-        borderRadius: radius.xl,
-        boxShadow: shadows.base,
-        border: "none",
-      }}
-    >
-      <CardContent className="flex flex-col gap-2 p-5">
-        <p
-          style={{
-            color: colors.text.secondary,
-            fontSize: typography.fontSize.xs,
-            fontWeight: typography.fontWeight.medium,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {label}
-        </p>
-        <p
-          style={{
-            color: valueColor,
-            fontSize: typography.fontSize["3xl"],
-            fontWeight: typography.fontWeight.bold,
-            lineHeight: "1",
-          }}
-        >
-          {value}
-        </p>
-        {subLabel && (
-          <p
-            style={{
-              color: colors.text.secondary,
-              fontSize: typography.fontSize.xs,
-            }}
-          >
-            {subLabel}
+    <Card className="rounded-xl shadow-md border-0 bg-card">
+      <CardContent className="flex items-start justify-between gap-4 p-5">
+        <div className="flex flex-col gap-2 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {label}
           </p>
+          <p className={cn("text-3xl font-bold leading-none", valueClass[accent])}>
+            {value}
+          </p>
+          {subLabel && (
+            <p className="text-xs text-muted-foreground">{subLabel}</p>
+          )}
+        </div>
+        {icon && (
+          <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
+            {icon}
+          </div>
         )}
       </CardContent>
     </Card>
