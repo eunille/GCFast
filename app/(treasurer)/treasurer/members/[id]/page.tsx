@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -18,10 +19,11 @@ import {
 } from "@/components/ui/dialog";
 import { MemberProfileCard } from "@/features/members/components/MemberDashboard/MemberProfileCard";
 import { EditMemberModal } from "@/features/members/components/EditMemberModal";
+import { PaymentHistoryTable } from "@/features/payments/components/PaymentHistoryTable";
 import { useMember } from "@/features/members/hooks/useMember";
 import { useDeactivateMember } from "@/features/members/hooks/useDeactivateMember";
+import { usePaymentHistory } from "@/features/payments/hooks/usePaymentHistory";
 import { toast } from "sonner";
-import { colors, spacing } from "@/theme";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -32,14 +34,15 @@ export default function MemberDetailPage({ params }: Props) {
   const router = useRouter();
   const { data: member, isLoading, isError } = useMember(id);
   const { mutate: deactivate, isPending: isDeactivating } = useDeactivateMember(id);
+  const { data: paymentHistoryResult, isLoading: isLoadingPayments } = usePaymentHistory(id);
 
   const [showEdit, setShowEdit]             = useState(false);
   const [showDeactivate, setShowDeactivate] = useState(false);
 
   if (isLoading) {
     return (
-      <main style={{ padding: spacing[6] }}>
-        <Skeleton className="h-8 w-48 mb-4" />
+      <main className="-m-6 p-6 min-h-full bg-white max-w-2xl mx-auto flex flex-col gap-4">
+        <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
       </main>
     );
@@ -47,13 +50,9 @@ export default function MemberDetailPage({ params }: Props) {
 
   if (isError || !member) {
     return (
-      <main style={{ padding: spacing[6] }}>
-        <p style={{ color: colors.status.outstanding }}>
-          Member not found or failed to load.
-        </p>
-        <Button variant="outline" className="mt-4" onClick={() => router.back()}>
-          Go Back
-        </Button>
+      <main className="-m-6 p-6 min-h-full bg-white">
+        <p className="text-destructive">Member not found or failed to load.</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.back()}>Go Back</Button>
       </main>
     );
   }
@@ -72,13 +71,14 @@ export default function MemberDetailPage({ params }: Props) {
     });
 
   return (
-    <main style={{ padding: spacing[6], maxWidth: 640, margin: "0 auto" }}>
+    <main className="-m-6 p-6 min-h-full bg-white">
+      <div className="max-w-2xl mx-auto flex flex-col gap-6">
       {/* Back link */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => router.push("/treasurer/members")}
-        style={{ marginBottom: spacing[4], color: colors.brand.accent }}
+        className="self-start text-accent hover:text-accent/80"
       >
         ← Back to Members
       </Button>
@@ -87,10 +87,10 @@ export default function MemberDetailPage({ params }: Props) {
       <MemberProfileCard member={member} />
 
       {/* Action row */}
-      <div className="flex gap-2 mt-4">
+      <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => setShowEdit(true)}
-          style={{ backgroundColor: colors.brand.accent }}
+          className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
           Edit Member
         </Button>
@@ -98,13 +98,33 @@ export default function MemberDetailPage({ params }: Props) {
         {member.isActive && (
           <Button
             variant="outline"
+            onClick={() => router.push(`/treasurer/payments/record?memberId=${id}`)}
+          >
+            Record Payment
+          </Button>
+        )}
+
+        {member.isActive && (
+          <Button
+            variant="outline"
             onClick={() => setShowDeactivate(true)}
-            style={{ borderColor: colors.status.outstanding, color: colors.status.outstanding }}
+            className="border-destructive text-destructive hover:bg-destructive/5"
           >
             Deactivate
           </Button>
         )}
       </div>
+
+      {/* Payment history */}
+      <Card>
+        <CardContent className="p-5">
+          <p className="font-semibold text-base text-foreground mb-4">Payment History</p>
+          <PaymentHistoryTable
+            payments={paymentHistoryResult?.data ?? []}
+            isLoading={isLoadingPayments}
+          />
+        </CardContent>
+      </Card>
 
       {/* Edit modal */}
       <EditMemberModal
@@ -119,32 +139,27 @@ export default function MemberDetailPage({ params }: Props) {
           <DialogHeader>
             <DialogTitle>Deactivate Member?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm" style={{ color: colors.text.secondary }}>
+          <p className="text-sm text-muted-foreground">
             This will deactivate{" "}
-            <span className="font-medium" style={{ color: colors.text.primary }}>
-              {member.fullName}
-            </span>
-            . Payment history is preserved but no new payments can be recorded.
+            <span className="font-medium text-foreground">{member.fullName}</span>.
+            Payment history is preserved but no new payments can be recorded.
             This action cannot be undone from the UI.
           </p>
           <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeactivate(false)}
-              disabled={isDeactivating}
-            >
+            <Button variant="outline" onClick={() => setShowDeactivate(false)} disabled={isDeactivating}>
               Cancel
             </Button>
             <Button
               disabled={isDeactivating}
               onClick={handleDeactivate}
-              style={{ backgroundColor: colors.status.outstanding }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeactivating ? "Deactivating…" : "Yes, Deactivate"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </main>
   );
 }
