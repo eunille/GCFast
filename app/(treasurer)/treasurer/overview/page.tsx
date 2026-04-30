@@ -1,167 +1,155 @@
 // app/(treasurer)/treasurer/overview/page.tsx
-// Layer 4 — PRESENTATIONAL: Treasurer dashboard overview page
+// Layer 4 — PRESENTATIONAL: Treasurer analytics dashboard
 
 "use client";
 
-import Link from "next/link";
-import { useTreasurerDashboard } from "@/features/payments/hooks/useTreasurerDashboard";
-import { DashboardStatsCard } from "@/features/payments/components/DashboardStatsCard";
-import { CollectionProgressBar } from "@/features/payments/components/CollectionProgressBar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils/format";
-import { colors, typography, radius, shadows, spacing } from "@/theme";
-
 export const dynamic = "force-dynamic";
 
-function OverviewSkeleton() {
+import { useRouter } from "next/navigation";
+import { Users, DollarSign, AlertCircle, TrendingUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTreasurerDashboard } from "@/features/payments/hooks/useTreasurerDashboard";
+import { DashboardStatCard } from "@/features/payments/components/DashboardStatCard";
+import { PaymentDistributionChart } from "@/features/payments/components/PaymentDistributionChart";
+import { MonthlyTrendChart } from "@/features/payments/components/MonthlyTrendChart";
+import { DashboardPaymentTable } from "@/features/payments/components/DashboardPaymentTable";
+import { formatCurrency } from "@/lib/utils/format";
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
-        ))}
+        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
       </div>
-      <Skeleton className="h-64 rounded-xl" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Skeleton className="h-72 rounded-xl" />
+        <Skeleton className="h-72 rounded-xl" />
+      </div>
+      <Skeleton className="h-96 rounded-xl" />
     </div>
   );
 }
 
-export default function TreasurerOverviewPage() {
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function TreasurerDashboardPage() {
+  const router = useRouter();
   const { data, isLoading, isError } = useTreasurerDashboard();
 
-  if (isLoading) return <OverviewSkeleton />;
+  if (isLoading) return <DashboardSkeleton />;
 
   if (isError || !data) {
     return (
-      <p style={{ color: colors.status.outstanding, fontSize: typography.fontSize.sm }}>
+      <p className="text-sm text-destructive py-8 text-center">
         Failed to load dashboard. Please refresh.
       </p>
     );
   }
 
-  const membersComplete = data.membersComplete ?? 0;
-  const totalMembers    = data.totalMembers ?? 0;
-  const collectionRate  = totalMembers > 0
-    ? Math.round((membersComplete / totalMembers) * 100)
+  const collectionRate = data.totalMembers > 0
+    ? Math.round((data.membersComplete / data.totalMembers) * 100)
     : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Page heading */}
+    <div className="-m-6 p-6 min-h-full bg-white flex flex-col gap-6">
+      {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div>
-        <h1
-          style={{
-            color: colors.text.primary,
-            fontSize: typography.fontSize["2xl"],
-            fontWeight: typography.fontWeight.bold,
-          }}
-        >
-          Overview
-        </h1>
-        <p style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}>
-          Current collection summary
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Treasurer Dashboard</h1>
+        <p className="text-sm mt-1 text-muted-foreground">
+          Monitor membership payments and track outstanding balances
         </p>
       </div>
 
-      {/* Stat cards */}
+      {/* ── Summary cards ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <DashboardStatsCard
+        <DashboardStatCard
           label="Total Members"
           value={data.totalMembers}
+          trend={data.newMembersThisMonth}
+          trendLabel={`+${data.newMembersThisMonth} this month`}
+          icon={<Users className="h-5 w-5" />}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-500"
         />
-        <DashboardStatsCard
-          label="Total Collected"
+        <DashboardStatCard
+          label="Dues Collected"
           value={formatCurrency(data.totalCollected)}
-          accent="success"
+          trend={data.collectedChange}
+          trendLabel={
+            data.collectedChange !== null
+              ? `${data.collectedChange >= 0 ? "+" : ""}${formatCurrency(data.collectedChange)} from last month`
+              : undefined
+          }
+          icon={<DollarSign className="h-5 w-5" />}
+          iconBg="bg-emerald-100"
+          iconColor="text-emerald-500"
+          valueColor="text-emerald-600"
         />
-        <DashboardStatsCard
-          label="With Balance"
+        <DashboardStatCard
+          label="Outstanding Balance"
           value={data.membersWithBalance}
-          accent="danger"
+          subLabel={`${data.membersWithBalance} member(s) with balance`}
+          trend={null}
+          icon={<AlertCircle className="h-5 w-5" />}
+          iconBg="bg-orange-100"
+          iconColor="text-orange-500"
+          valueColor="text-orange-500"
         />
-        <DashboardStatsCard
-          label="Complete"
-          value={data.membersComplete}
-          subLabel={`${collectionRate}% collection rate`}
-          accent="success"
+        <DashboardStatCard
+          label="Collection Rate"
+          value={`${collectionRate}%`}
+          trend={data.collectionRateChange}
+          trendLabel={
+            data.collectionRateChange !== null
+              ? `${data.collectionRateChange >= 0 ? "+" : ""}${data.collectionRateChange}% from last month`
+              : undefined
+          }
+          icon={<TrendingUp className="h-5 w-5" />}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-500"
+          valueColor="text-purple-600"
         />
       </div>
 
-      {/* Collection by college */}
-      <Card
-        style={{
-          background: colors.surface.page,
-          borderRadius: radius.xl,
-          boxShadow: shadows.base,
-          border: "none",
-        }}
-      >
-        <CardHeader className="pb-2">
-          <CardTitle
-            style={{
-              color: colors.text.primary,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            Collection by College
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-5 pb-4">
-          {data.collectionByCollege.length === 0 ? (
-            <p style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}>
-              No data yet.
+      {/* ── Charts row ──────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Payment Distribution */}
+        <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-foreground">Payment Distribution</p>
+            <p className="text-xs text-muted-foreground">By College/Department</p>
+          </div>
+          <PaymentDistributionChart data={data.collectionByCollege} />
+        </div>
+
+        {/* Monthly Collection Trend */}
+        <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-foreground">Monthly Collection Trend</p>
+            <p className="text-xs text-muted-foreground">
+              Last {data.monthlyTrend.length} months
             </p>
-          ) : (
-            <div className="divide-y" style={{ borderColor: colors.brand.subtle }}>
-              {data.collectionByCollege.map((college) => (
-                <CollectionProgressBar
-                  key={college.collegeId}
-                  collegeName={college.collegeName}
-                  total={college.total}
-                  memberCount={college.memberCount}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Separator style={{ background: colors.brand.subtle }} />
-
-      {/* Quick links */}
-      <div className="flex gap-3">
-        <Button
-          asChild
-          style={{
-            background: colors.brand.primary,
-            color: colors.surface.page,
-            borderRadius: radius.md,
-            fontSize: typography.fontSize.sm,
-            paddingLeft: spacing[4],
-            paddingRight: spacing[4],
-          }}
-        >
-          <Link href="/treasurer/members">View Members</Link>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          style={{
-            borderColor: colors.brand.primary,
-            color: colors.brand.primary,
-            borderRadius: radius.md,
-            fontSize: typography.fontSize.sm,
-            paddingLeft: spacing[4],
-            paddingRight: spacing[4],
-          }}
-        >
-          <Link href="/treasurer/payments">View Payments</Link>
-        </Button>
+          </div>
+          <MonthlyTrendChart data={data.monthlyTrend} visibleMonths={4} />
+        </div>
       </div>
+
+      {/* ── Payment Tracking ────────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-foreground">Payment Tracking</p>
+          <p className="text-xs text-muted-foreground">Monitor membership fees and monthly dues</p>
+        </div>
+        <DashboardPaymentTable
+          onRecord={(id) =>
+            router.push(id ? `/treasurer/payments/record?memberId=${id}` : "/treasurer/payments/record")
+          }
+        />
+      </div>
+
+
     </div>
   );
 }
