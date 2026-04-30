@@ -2,15 +2,15 @@
 // Layer 2 — DATA: Calls /api/reports/generate via authFetch. No JSX. No React hooks.
 
 import { authFetch } from "@/lib/utils/auth-fetch";
-import type { GenerateReportInput, ReportData } from "@/lib/models";
+import type { GenerateReportInput, ReportResult } from "@/lib/models";
 
 export const reportRepository = {
   /**
    * POST /api/reports/generate
-   * - format "json"  → returns ReportData parsed from JSON
+   * - format "json"  → returns ReportResult parsed from JSON
    * - format "excel" | "pdf" → returns raw Blob for browser download
    */
-  async generate(input: GenerateReportInput): Promise<ReportData | Blob> {
+  async generate(input: GenerateReportInput): Promise<ReportResult | Blob> {
     const res = await authFetch("/api/reports/generate", {
       method: "POST",
       body: JSON.stringify(input),
@@ -26,7 +26,7 @@ export const reportRepository = {
     }
 
     if (input.format === "json") {
-      const json = await res.json() as { success: true; data: ReportData };
+      const json = await res.json() as { success: true; data: ReportResult };
       return json.data;
     }
 
