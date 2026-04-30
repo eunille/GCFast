@@ -1,41 +1,36 @@
 // features/reports/repositories/report.repository.ts
-// Layer 2 — DATA: Only layer that calls Supabase for reports. No JSX. No React hooks.
+// Layer 2 — DATA: Calls /api/reports/generate via authFetch. No JSX. No React hooks.
 
-import { supabase } from "@/lib/supabase/client";
-import type { ReportFilter, ReportRow } from "../types/report.types";
-
-function mapReportRowFromDb(row: Record<string, unknown>): ReportRow {
-  return {
-    memberId:          String(row.member_id),
-    memberName:        String(row.member_name),
-    college:           String(row.college_name ?? row.college ?? ""),
-    totalPaid:         Number(row.total_paid ?? 0),
-    outstandingBalance: Number(row.outstanding_balance ?? 0),
-    monthsPaid:        Array.isArray(row.months_paid) ? (row.months_paid as number[]) : [],
-    membershipFeePaid: Boolean(row.membership_fee_paid),
-  };
-}
+import { authFetch } from "@/lib/utils/auth-fetch";
+import type { GenerateReportInput, ReportData } from "@/lib/models";
 
 export const reportRepository = {
-  async generate(filter: ReportFilter): Promise<ReportRow[]> {
-    let query = supabase
-      .from("member_payment_summary")
-      .select("*")
-      .eq("year_ref", filter.yearRef);
+  /**
+   * POST /api/reports/generate
+   * - format "json"  → returns ReportData parsed from JSON
+   * - format "excel" | "pdf" → returns raw Blob for browser download
+   */
+  async generate(input: GenerateReportInput): Promise<ReportData | Blob> {
+    const res = await authFetch("/api/reports/generate", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
 
-    if (filter.collegeId) {
-      query = query.eq("college_id", filter.collegeId);
+    if (!res.ok) {
+      let msg = `Report generation failed (${res.status})`;
+      try {
+        const json = await res.json() as { error?: { message?: string } };
+        if (json.error?.message) msg = json.error.message;
+      } catch { /* ignore */ }
+      throw new Error(msg);
     }
 
-    if (filter.monthRef) {
-      // Filter members who have NOT paid the given month
-      if (filter.type === "OUTSTANDING_BALANCE") {
-        query = query.not("months_paid", "cs", `{${filter.monthRef}}`);
-      }
+    if (input.format === "json") {
+      const json = await res.json() as { success: true; data: ReportData };
+      return json.data;
     }
 
-    const { data, error } = await query;
-    if (error) throw new Error(error.message);
-    return (data as Record<string, unknown>[]).map(mapReportRowFromDb);
+    // excel / pdf — return raw blob
+    return res.blob();
   },
 };
