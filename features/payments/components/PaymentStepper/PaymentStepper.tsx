@@ -5,8 +5,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { StepperHeader } from "./StepperHeader";
 import { SelectMemberStep } from "./SelectMemberStep";
@@ -17,9 +18,9 @@ import {
   type PaymentFormValues,
 } from "./PaymentDetailsStep";
 import { ConfirmationStep } from "./ConfirmationStep";
-import { PaymentSuccessView } from "./PaymentSuccessView";
 import { useRecordPayment } from "../../hooks/useRecordPayment";
 import { useAcademicPeriods } from "@/lib/hooks/useAcademicPeriods";
+import { formatCurrency } from "@/lib/utils/format";
 import type { Member, PaymentTransaction } from "@/lib/models";
 
 const DEFAULT_FORM: PaymentFormValues = {
@@ -27,7 +28,6 @@ const DEFAULT_FORM: PaymentFormValues = {
   amountPaid: "",
   paymentDate: new Date().toISOString().slice(0, 10),
   academicPeriodId: "",
-  referenceNumber: "",
   notes: "",
 };
 
@@ -41,9 +41,7 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
   const { mutate, isPending } = useRecordPayment();
   const { data: periods = [] } = useAcademicPeriods();
 
-  const [step, setStep] = useState<1 | 2 | 3 | "success">(
-    preSelectedMember ? 2 : 1
-  );
+  const [step, setStep] = useState<1 | 2 | 3>(preSelectedMember ? 2 : 1);
   const [selectedMember, setSelectedMember] = useState<Member | null>(preSelectedMember);
   const [formValues, setFormValues] = useState<PaymentFormValues>(DEFAULT_FORM);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -80,7 +78,6 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
           periodLabel: null,
         };
         setResult(enriched);
-        setStep("success");
       },
       onError: (err) => {
         toast.error("Failed to record payment", { description: err.message });
@@ -88,13 +85,13 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
     });
   };
 
-  // ── Reset (record another) ───────────────────────────────────────
+  // ── Reset (record another / close modal) ───────────────────────
   const handleReset = () => {
+    setResult(null);
     setStep(1);
     setSelectedMember(null);
     setFormValues(DEFAULT_FORM);
     setFormErrors({});
-    setResult(null);
   };
 
   // ── Back logic ───────────────────────────────────────────────────
@@ -104,6 +101,7 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
     else router.push("/treasurer/payments");
   };
 
+
   // ── Stepper subtitle text ────────────────────────────────────────
   const subtitle: Record<1 | 2 | 3, string> = {
     1: "Select a member to record payment",
@@ -111,19 +109,8 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
     3: "Review and confirm payment",
   };
 
-  if (step === "success" && result) {
-    return (
-      <div className="mx-auto max-w-lg w-full">
-        <PaymentSuccessView
-          payment={result}
-          onRecordAnother={handleReset}
-          onGoToDashboard={() => router.push("/treasurer/overview")}
-        />
-      </div>
-    );
-  }
-
   return (
+    <>
     <div className="flex flex-col gap-6 max-w-2xl w-full mx-auto">
       {/* Back + title */}
       <div>
@@ -136,14 +123,14 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
           Back
         </button>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Record Payment</h1>
-        <p className="text-sm mt-1 text-muted-foreground">{subtitle[step as 1 | 2 | 3]}</p>
+        <p className="text-sm mt-1 text-muted-foreground">{subtitle[step]}</p>
       </div>
 
       {/* Step indicator */}
-      <StepperHeader currentStep={step as 1 | 2 | 3} />
+      <StepperHeader currentStep={step} />
 
       {/* Step content */}
-      <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+      <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
         {step === 1 && (
           <SelectMemberStep onSelect={handleMemberSelect} />
         )}
@@ -191,5 +178,59 @@ export function PaymentStepper({ preSelectedMember = null }: Props) {
         )}
       </div>
     </div>
+
+    {/* ── Success modal ─────────────────────────────────────────── */}
+    <Dialog open={result !== null} onOpenChange={(open) => { if (!open) handleReset(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogTitle className="sr-only">Payment Recorded Successfully</DialogTitle>
+        {result && (
+          <div className="flex flex-col items-center gap-6 py-2 text-center">
+            {/* Animated check */}
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-emerald-100 animate-pulse" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <CheckCircle className="h-8 w-8" />
+              </div>
+            </div>
+            {/* Headline */}
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Payment Recorded!</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {result.memberName}&apos;s account has been updated.
+              </p>
+            </div>
+            {/* Details card */}
+            <div className="w-full rounded-lg border border-border bg-muted/30 p-4 text-left">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payment Details</p>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Completed</span>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Member</span>
+                  <span className="text-sm font-semibold">{result.memberName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Payment Type</span>
+                  <span className="text-sm font-semibold">
+                    {result.paymentType === "MEMBERSHIP_FEE" ? "Membership Fee" : "Monthly Dues"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Amount</span>
+                  <span className="text-sm font-bold text-emerald-600">{formatCurrency(result.amountPaid)}</span>
+                </div>
+              </div>
+            </div>
+            {/* Actions */}
+            <div className="flex gap-3 w-full">
+              <Button variant="outline" className="flex-1" onClick={handleReset}>Record Another</Button>
+              <Button className="flex-1" onClick={() => router.push("/treasurer/overview")}>Back to Dashboard</Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

@@ -23,7 +23,6 @@ export interface PaymentFormValues {
   amountPaid: string;
   paymentDate: string;
   academicPeriodId: string;
-  referenceNumber: string;
   notes: string;
 }
 
@@ -177,33 +176,7 @@ export function PaymentDetailsStep({ member, values, onChange, errors }: Props) 
         </div>
       )}
 
-      {/* Payment Date */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="paymentDate">
-          Payment Date <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="paymentDate"
-          type="date"
-          value={values.paymentDate}
-          onChange={(e) => set("paymentDate")(e.target.value)}
-        />
-        {errors.paymentDate && <p className="text-xs text-destructive">{errors.paymentDate}</p>}
-      </div>
 
-      {/* Receipt / Reference Number */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="referenceNumber" className="flex gap-1">
-          Receipt Number
-          <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
-        </Label>
-        <Input
-          id="referenceNumber"
-          value={values.referenceNumber}
-          onChange={(e) => set("referenceNumber")(e.target.value)}
-          placeholder="e.g., #12345"
-        />
-      </div>
 
       {/* Notes */}
       <div className="flex flex-col gap-1.5">
@@ -235,7 +208,6 @@ export function buildPaymentInput(
     amountPaid: parseFloat(values.amountPaid),
     paymentDate: values.paymentDate,
     academicPeriodId: values.academicPeriodId || undefined,
-    referenceNumber: values.referenceNumber || undefined,
     notes: values.notes || undefined,
   };
 }
@@ -248,7 +220,6 @@ export function validatePaymentDetails(
   const amount = parseFloat(values.amountPaid);
   if (!values.amountPaid || isNaN(amount) || amount <= 0)
     errs.amountPaid = "Amount must be greater than 0";
-  if (!values.paymentDate) errs.paymentDate = "Date is required";
   if (values.paymentType === "MONTHLY_DUES" && !values.academicPeriodId)
     errs.academicPeriodId = "Academic period is required for Monthly Dues";
   return errs;
