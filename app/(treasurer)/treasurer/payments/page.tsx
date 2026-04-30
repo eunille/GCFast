@@ -29,7 +29,7 @@ export default function PaymentsPage() {
   const { data: dashboard, isLoading } = useTreasurerDashboard();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 -m-6 p-6 min-h-full bg-white">
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Payments</h1>
