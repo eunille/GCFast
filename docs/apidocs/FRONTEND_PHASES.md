@@ -268,8 +268,8 @@ interface TreasurerDashboard {
 - College picker must use `useColleges()` — never hardcode college options
 
 ---
-
-## Phase 6 — Payment Recording & Tracking (Treasurer)
+  
+## Phase 6 — Payment(Treasurer)
 
 **Goal:** Treasurer can record payments and view full payment history and summaries.
 

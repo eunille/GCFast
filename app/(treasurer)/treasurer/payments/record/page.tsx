@@ -18,7 +18,7 @@ function RecordPageInner() {
 
   if (memberId && isLoading) {
     return (
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto">
+      <div className="-m-6 p-6 min-h-full bg-white flex flex-col gap-4 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-14 w-full" />
         <Skeleton className="h-64 w-full rounded-xl" />
@@ -27,7 +27,9 @@ function RecordPageInner() {
   }
 
   return (
-    <PaymentStepper preSelectedMember={memberId ? (member ?? null) : null} />
+    <div className="-m-6 p-6 min-h-full bg-white">
+      <PaymentStepper preSelectedMember={memberId ? (member ?? null) : null} />
+    </div>
   );
 }
 
@@ -35,7 +37,7 @@ export default function RecordPaymentPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
+        <div className="-m-6 p-6 min-h-full bg-white flex flex-col gap-4 max-w-2xl mx-auto">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-14 w-full" />
           <Skeleton className="h-64 w-full rounded-xl" />

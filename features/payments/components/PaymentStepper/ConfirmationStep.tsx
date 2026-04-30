@@ -51,7 +51,6 @@ export function ConfirmationStep({ member, values, periods }: Props) {
             year: "numeric", month: "long", day: "numeric",
           }))}
           {row("Amount", formatCurrency(isNaN(amount) ? 0 : amount))}
-          {values.referenceNumber && row("Receipt Number", values.referenceNumber)}
           {values.notes && row("Notes", values.notes)}
         </div>
       </div>
