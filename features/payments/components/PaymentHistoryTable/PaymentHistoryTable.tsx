@@ -29,11 +29,17 @@ function formatDate(iso: string) {
   });
 }
 
+function getDescription(p: PaymentRecord): string {
+  if (p.paymentType === "MEMBERSHIP_FEE") return "Membership Fee";
+  const month = new Date(p.paymentDate).toLocaleString("en-PH", { month: "long" });
+  return `Monthly Dues - ${month}`;
+}
+
 export function PaymentHistoryTable({ payments, isLoading }: Props) {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2">
-        {Array.from({ length: 3 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-10 w-full rounded-md" />
         ))}
       </div>
@@ -42,7 +48,7 @@ export function PaymentHistoryTable({ payments, isLoading }: Props) {
 
   if (payments.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">
+      <p className="text-sm text-muted-foreground py-6 text-center">
         No payments recorded yet.
       </p>
     );
@@ -52,30 +58,35 @@ export function PaymentHistoryTable({ payments, isLoading }: Props) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Reference #</TableHead>
-          <TableHead>Notes</TableHead>
+          <TableHead className="w-32">Date</TableHead>
+          <TableHead>Description</TableHead>
+          <TableHead className="w-28 text-right">Amount</TableHead>
+          <TableHead className="w-24 text-center">Status</TableHead>
+          <TableHead className="w-32 text-right">Receipt</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {payments.map((p) => (
           <TableRow key={p.id}>
-            <TableCell className="text-sm">{formatDate(p.paymentDate)}</TableCell>
-            <TableCell>
-              <Badge variant="outline" className="text-xs font-normal">
-                {p.paymentType === "MEMBERSHIP_FEE" ? "Membership Fee" : "Monthly Dues"}
-              </Badge>
+            <TableCell className="text-sm text-muted-foreground">
+              {formatDate(p.paymentDate)}
             </TableCell>
-            <TableCell className="text-sm font-medium">
+            <TableCell className="text-sm font-medium text-foreground">
+              {getDescription(p)}
+            </TableCell>
+            <TableCell className="text-sm font-semibold text-foreground text-right">
               {formatCurrency(p.amountPaid)}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {p.referenceNumber ?? "—"}
+            <TableCell className="text-center">
+              <Badge
+                variant="outline"
+                className="text-xs font-medium text-status-paid border-status-paid bg-status-paid-bg"
+              >
+                Paid
+              </Badge>
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground max-w-48 truncate">
-              {p.notes ?? "—"}
+            <TableCell className="text-sm text-muted-foreground text-right">
+              {p.referenceNumber ? `# ${p.referenceNumber}` : "—"}
             </TableCell>
           </TableRow>
         ))}
@@ -83,5 +94,3 @@ export function PaymentHistoryTable({ payments, isLoading }: Props) {
     </Table>
   );
 }
-
-
