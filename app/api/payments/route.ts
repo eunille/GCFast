@@ -39,11 +39,14 @@ export const GET = apiHandler(async (req: Request) => {
   const supabase = await createSupabaseServer(req);
 
   // 3. Query payment records — join members + academic_periods for display
+  //    Use !inner join on members when filtering by college so unmatched rows are excluded
+  const memberJoinType = collegeId ? "members!inner" : "members";
+
   let query = supabase
     .from("payment_records")
     .select(
       `*,
-       members!member_id(id, full_name, email, college_id),
+       ${memberJoinType}!member_id(id, full_name, email, college_id),
        academic_periods!academic_period_id(id, label)`,
       { count: "exact" }
     )

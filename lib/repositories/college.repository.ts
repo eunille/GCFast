@@ -8,7 +8,7 @@ export const collegeRepository = {
   async getAll(): Promise<College[]> {
     const { data, error } = await supabase
       .from("colleges")
-      .select("id, name")
+      .select("id, name, code")
       .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);
@@ -16,7 +16,7 @@ export const collegeRepository = {
     return data.map((row) => ({
       id: row.id,
       name: row.name,
-      code: "",
+      code: row.code ?? "",
     }));
   },
 };
