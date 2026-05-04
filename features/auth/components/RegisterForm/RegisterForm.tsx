@@ -1,24 +1,24 @@
 // features/auth/components/RegisterForm/RegisterForm.tsx
 // Layer 4 — PRESENTATIONAL: Registration form for both roles.
-// Calls useRegister (Layer 3). No direct Supabase calls. No business logic.
 
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useRegister, type RegisterRole } from "../../hooks/useRegister";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { colors, typography, shadows, radius } from "@/theme";
 
 interface Props {
   role: RegisterRole;
@@ -26,21 +26,13 @@ interface Props {
 
 const ROLE_CONFIG = {
   treasurer: {
-    title: "Treasurer Registration",
-    description: "Create your treasurer account to manage membership payments.",
-    badgeLabel: "TREASURER",
-    badgeColor: colors.brand.primary,
-    badgeBg: colors.brand.subtle,
-    loginLabel: "Already have an account?",
+    badge: "Treasurer",
+    badgeClass: "bg-blue-100 text-blue-700",
     loginHref: "/login",
   },
   member: {
-    title: "Member Registration",
-    description: "Create your member account to track your dues and payments.",
-    badgeLabel: "MEMBER",
-    badgeColor: colors.status.paid,
-    badgeBg: colors.status.paidBg,
-    loginLabel: "Already have an account?",
+    badge: "Member",
+    badgeClass: "bg-emerald-100 text-emerald-700",
     loginHref: "/login",
   },
 } as const;
@@ -50,6 +42,8 @@ export function RegisterForm({ role }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
 
@@ -59,276 +53,203 @@ export function RegisterForm({ role }: Props) {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setConfirmError(null);
-
     if (password !== confirmPassword) {
       setConfirmError("Passwords do not match.");
       return;
     }
-
     const result = await register(email, password, fullName);
-    if (result.requiresEmailConfirmation) {
-      setRegistered(true);
-    }
+    if (result.requiresEmailConfirmation) setRegistered(true);
   }
 
-  // Email confirmation pending state
+  // ── Email confirmation pending ─────────────────────────────────────────────
   if (registered) {
     return (
-      <Card
-        className="w-full max-w-md text-center"
-        style={{ boxShadow: shadows.lg, borderRadius: radius.xl }}
-      >
-        <CardHeader>
-          <div
-            className="mx-auto mb-4 flex items-center justify-center w-14 h-14"
-            style={{ background: colors.status.paidBg, borderRadius: radius.full }}
-          >
-            <span style={{ color: colors.status.paid, fontSize: typography.fontSize["2xl"] }}>✓</span>
-          </div>
-          <CardTitle
-            style={{
-              color: colors.brand.primary,
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
-            Check your email
-          </CardTitle>
-          <CardDescription style={{ color: colors.text.secondary }}>
-            We sent a confirmation link to <strong>{email}</strong>.
-            Click it to activate your account, then sign in.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            asChild
-            className="w-full"
-            style={{
-              background: colors.brand.primary,
-              color: colors.surface.page,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            <Link href="/login">Go to Sign in</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4">
+        <Card className="w-full max-w-sm shadow-none">
+          <CardContent className="flex flex-col items-center gap-6 text-center pt-8 pb-8">
+            <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
+              <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-xl font-bold text-foreground tracking-tight">
+                Check your email
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                We sent a confirmation link to{" "}
+                <span className="font-medium text-foreground">{email}</span>.
+                Click it to activate your account.
+              </p>
+            </div>
+            <Button
+              asChild
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-semibold"
+            >
+              <Link href="/login">Back to Sign in</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card
-      className="w-full max-w-md"
-      style={{ boxShadow: shadows.lg, borderRadius: radius.xl }}
-    >
-      <CardHeader className="text-center pb-2">
-        {/* Brand mark */}
-        <div
-          className="mx-auto mb-3 flex items-center justify-center w-14 h-14"
-          style={{ background: colors.brand.primary, borderRadius: radius.xl }}
-        >
-          <span
-            style={{
-              color: colors.surface.page,
-              fontSize: typography.fontSize["2xl"],
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
-            G
-          </span>
-        </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4 py-12">
+      <Card className="w-full max-w-sm shadow-none">
+        <CardHeader className="items-center text-center gap-2 pb-4">
+          <Image
+            src="/gcfast_logo.png"
+            alt="GFAST"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-2xl font-bold tracking-tight">
+                Create an account
+              </CardTitle>
+              <span
+                className={`px-2 py-0.5 text-xs font-semibold rounded-full ${config.badgeClass}`}
+              >
+                {config.badge}
+              </span>
+            </div>
+            <CardDescription>
+              Already have an account?{" "}
+              <Link
+                href={config.loginHref}
+                className="text-foreground font-medium underline underline-offset-4 hover:text-muted-foreground transition-colors"
+              >
+                Sign in
+              </Link>
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-        {/* Role badge */}
-        <div className="flex justify-center mb-1">
-          <span
-            className="px-3 py-1 text-xs font-semibold tracking-wide uppercase"
-            style={{
-              background: config.badgeBg,
-              color: config.badgeColor,
-              borderRadius: radius.full,
-              fontSize: typography.fontSize.xs,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            {config.badgeLabel}
-          </span>
-        </div>
-
-        <CardTitle
-          style={{
-            color: colors.brand.primary,
-            fontSize: typography.fontSize.xl,
-            fontWeight: typography.fontWeight.bold,
-          }}
-        >
-          {config.title}
-        </CardTitle>
-        <CardDescription
-          style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}
-        >
-          {config.description}
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="pt-4">
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* API error */}
+        <CardContent className="flex flex-col gap-4">
           {error && (
             <div
-              className="px-4 py-3 text-sm"
+              className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
               role="alert"
-              aria-live="polite"
-              style={{
-                background: colors.status.outstandingBg,
-                color: colors.status.outstanding,
-                borderRadius: radius.md,
-                fontSize: typography.fontSize.sm,
-              }}
             >
               {error}
             </div>
           )}
 
-          {/* Full name */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="fullName"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Full name
-            </Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Maria Santos"
-              autoComplete="name"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Maria Santos"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Re-enter your password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirm ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {confirmError && (
+                <p className="text-xs text-destructive">{confirmError}</p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-semibold"
               disabled={isLoading}
-            />
-          </div>
-
-          {/* Email */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
             >
-              Email address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
+              {isLoading ? "Creating account…" : "Create account"}
+            </Button>
+          </form>
+        </CardContent>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="password"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Min. 6 characters"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Confirm password */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="confirmPassword"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Confirm password
-            </Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Re-enter your password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={isLoading}
-            />
-            {confirmError && (
-              <p
-                style={{
-                  color: colors.status.outstanding,
-                  fontSize: typography.fontSize.xs,
-                }}
-              >
-                {confirmError}
-              </p>
-            )}
-          </div>
-
-          {/* Submit */}
-          <Button
-            type="submit"
-            className="w-full mt-2"
-            disabled={isLoading}
-            style={{
-              background: colors.brand.primary,
-              color: colors.surface.page,
-              fontWeight: typography.fontWeight.semibold,
-              fontSize: typography.fontSize.base,
-            }}
-          >
-            {isLoading ? "Creating account…" : "Create account"}
-          </Button>
-        </form>
-
-        <Separator className="my-4" />
-
-        <p
-          className="text-center"
-          style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}
-        >
-          {config.loginLabel}{" "}
-          <Link
-            href={config.loginHref}
-            style={{
-              color: colors.brand.accent,
-              fontWeight: typography.fontWeight.medium,
-            }}
-          >
-            Sign in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+        <CardFooter className="justify-center pb-6 pt-2">
+          <p className="text-center text-xs text-muted-foreground leading-relaxed">
+            By clicking continue, you agree to our{" "}
+            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
+              Terms of Service
+            </span>{" "}
+            and{" "}
+            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
+              Privacy Policy
+            </span>
+            .
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

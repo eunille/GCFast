@@ -1,28 +1,29 @@
 // features/auth/components/LoginForm/LoginForm.tsx
 // Layer 4 — PRESENTATIONAL: Email + password login form.
-// Calls useSignIn (Layer 3). No direct Supabase calls. No business logic.
 
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useSignIn } from "../../hooks/useSignIn";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { colors, typography, shadows, radius } from "@/theme";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, isLoading, error } = useSignIn();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -31,157 +32,118 @@ export function LoginForm() {
   }
 
   return (
-    <Card
-      className="w-full max-w-md"
-      style={{ boxShadow: shadows.lg, borderRadius: radius.xl }}
-    >
-      <CardHeader className="text-center pb-2">
-        {/* Brand mark */}
-        <div
-          className="mx-auto mb-4 flex items-center justify-center w-14 h-14"
-          style={{
-            background: colors.brand.primary,
-            borderRadius: radius.xl,
-          }}
-        >
-          <span
-            style={{
-              color: colors.surface.page,
-              fontSize: typography.fontSize["2xl"],
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
-            G
-          </span>
-        </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4">
+      <Card className="w-full max-w-sm shadow-none">
+        <CardHeader className="items-center text-center gap-2 pb-4">
+          <Image
+            src="/gcfast_logo.png"
+            alt="GFAST"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Welcome to GFAC-ASS
+          </CardTitle>
+          <CardDescription>
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="text-foreground font-medium underline underline-offset-4 hover:text-muted-foreground transition-colors"
+            >
+              Sign up
+            </Link>
+          </CardDescription>
+        </CardHeader>
 
-        <CardTitle
-          style={{
-            color: colors.brand.primary,
-            fontSize: typography.fontSize["2xl"],
-            fontWeight: typography.fontWeight.bold,
-          }}
-        >
-          GFAST-MPTS
-        </CardTitle>
-
-        <CardDescription
-          style={{
-            color: colors.text.secondary,
-            fontSize: typography.fontSize.sm,
-          }}
-        >
-          Teacher Membership Payment Tracking System
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="pt-4">
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* Error alert */}
+        <CardContent className="flex flex-col gap-4">
           {error && (
             <div
-              className="px-4 py-3 text-sm"
+              className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
               role="alert"
-              aria-live="polite"
-              style={{
-                background: colors.status.outstandingBg,
-                color: colors.status.outstanding,
-                borderRadius: radius.md,
-                fontSize: typography.fontSize.sm,
-              }}
             >
               {error}
             </div>
           )}
 
-          {/* Email */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Email address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-semibold"
               disabled={isLoading}
-            />
+            >
+              {isLoading ? "Signing in…" : "Login"}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">Or</span>
+            <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="password"
-              style={{
-                color: colors.text.primary,
-                fontWeight: typography.fontWeight.medium,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Submit */}
-          <Button
-            type="submit"
-            className="w-full mt-2"
-            disabled={isLoading}
-            style={{
-              background: colors.brand.primary,
-              color: colors.surface.page,
-              fontWeight: typography.fontWeight.semibold,
-              fontSize: typography.fontSize.base,
-            }}
-          >
-            {isLoading ? "Signing in…" : "Sign in"}
+          <Button asChild variant="outline" className="w-full font-medium">
+            <Link href="/register">Register as Member</Link>
           </Button>
-        </form>
+        </CardContent>
 
-        <Separator className="my-4" />
-
-        <div className="space-y-2 text-center">
-          <p style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}>
-            No account yet?{" "}
-            <Link
-              href="/register"
-              style={{ color: colors.brand.accent, fontWeight: typography.fontWeight.medium }}
-            >
-              Register as Member
-            </Link>
+        <CardFooter className="justify-center pb-6 pt-2">
+          <p className="text-center text-xs text-muted-foreground leading-relaxed">
+            By clicking continue, you agree to our{" "}
+            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
+              Terms of Service
+            </span>{" "}
+            and{" "}
+            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
+              Privacy Policy
+            </span>
+            .
           </p>
-          <p style={{ color: colors.text.secondary, fontSize: typography.fontSize.sm }}>
-            Setting up the system?{" "}
-            <Link
-              href="/register/treasurer"
-              style={{ color: colors.brand.accent, fontWeight: typography.fontWeight.medium }}
-            >
-              Register as Treasurer
-            </Link>
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
-
