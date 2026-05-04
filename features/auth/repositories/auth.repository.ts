@@ -53,6 +53,11 @@ export const authRepository = {
     return mapSessionUser(session.user);
   },
 
+  async changePassword(newPassword: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  },
+
   onAuthStateChange(callback: (user: AuthUser | null) => void) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
