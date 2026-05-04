@@ -26,6 +26,7 @@ export const apiRecordPaymentSchema = z
 
 export const apiPaymentSummaryFilterSchema = z
   .object({
+    memberId: z.string().uuid().optional(),
     collegeId: z.string().uuid().optional(),
     memberType: z.enum(["FULL_TIME", "ASSOCIATE"]).optional(),
     status: z.enum(["COMPLETE", "HAS_BALANCE"]).optional(),
