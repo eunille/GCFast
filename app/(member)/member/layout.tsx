@@ -3,13 +3,14 @@
 
 "use client";
 
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, User } from "lucide-react";
 import { useRequireRole } from "@/features/auth/hooks/useRequireRole";
 import { AppShell } from "@/components/layout/AppShell";
 import type { NavItem } from "@/components/layout/AppShell";
 
 const MEMBER_NAV: NavItem[] = [
   { href: "/member/dashboard", label: "My Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/member/profile",   label: "My Profile",   icon: <User className="h-4 w-4" /> },
 ];
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
