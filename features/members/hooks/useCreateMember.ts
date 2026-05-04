@@ -18,6 +18,7 @@ export function useCreateMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "treasurer"] });
     },
   });
 }

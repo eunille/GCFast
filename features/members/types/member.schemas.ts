@@ -10,6 +10,7 @@ import { paginationSchema } from "@/lib/utils/filter-schemas";
 export const createMemberSchema = z.object({
   fullName:   z.string().min(2, "Full name must be at least 2 characters").max(100).trim(),
   email:      z.string().email("Invalid email address"),
+  password:   z.string().min(6, "Password must be at least 6 characters").max(72).optional(),
   collegeId:  z.string().uuid("Invalid college"),
   memberType: z.enum(["FULL_TIME", "ASSOCIATE"], { message: "Member type is required" }),
   employeeId: z.string().max(50).trim().optional(),

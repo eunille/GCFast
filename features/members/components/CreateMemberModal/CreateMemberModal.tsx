@@ -36,31 +36,33 @@ export function CreateMemberModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md flex flex-col max-h-[90vh]">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Add New Member</DialogTitle>
           <DialogDescription>
             Fill in the member details below. Fields marked with * are required.
           </DialogDescription>
         </DialogHeader>
 
-        <CreateMemberForm
-          key={open ? "open" : "closed"}
-          isLoading={isPending}
-          onSubmit={(data) =>
-            mutate(data, {
-              onSuccess: () => {
-                toast.success("Member added successfully");
-                setOpen(false);
-              },
-              onError: (err) => {
-                toast.error("Failed to add member", { description: err.message });
-              },
-            })
-          }
-        />
+        <div className="overflow-y-auto flex-1 px-1 -mx-1">
+          <CreateMemberForm
+            key={open ? "open" : "closed"}
+            isLoading={isPending}
+            onSubmit={(data) =>
+              mutate(data, {
+                onSuccess: () => {
+                  toast.success("Member added successfully");
+                  setOpen(false);
+                },
+                onError: (err) => {
+                  toast.error("Failed to add member", { description: err.message });
+                },
+              })
+            }
+          />
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <DialogClose asChild>
             <Button type="button" variant="outline" disabled={isPending}>
               Cancel

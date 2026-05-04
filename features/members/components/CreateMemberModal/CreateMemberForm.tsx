@@ -4,9 +4,11 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -24,7 +26,7 @@ interface Props {
   isLoading: boolean;
 }
 
-type FieldErrors = Partial<Record<keyof CreateMemberInput, string>>;
+type FieldErrors = Partial<Record<keyof CreateMemberInput | "confirmPassword", string>>;
 
 function FieldWrapper({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-col gap-1.5">{children}</div>;
@@ -41,6 +43,9 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
   const [form, setForm] = useState<Partial<CreateMemberInput>>({
     memberType: "FULL_TIME",
   });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const set = (field: keyof CreateMemberInput, value: string | undefined) =>
@@ -48,13 +53,26 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: FieldErrors = {};
+
+    // Confirm-password check (form-only — not sent to API)
+    if (form.password || confirmPassword) {
+      if (form.password !== confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match.";
+      }
+    }
+
     try {
       const validated = createMemberSchema.parse(form);
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
       setErrors({});
       onSubmit(validated);
     } catch (err) {
       if (err instanceof ZodError) {
-        const fe: FieldErrors = {};
+        const fe: FieldErrors = { ...newErrors };
         for (const issue of err.issues) {
           const key = issue.path[0] as keyof CreateMemberInput;
           if (!fe[key]) fe[key] = issue.message;
@@ -65,7 +83,7 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
   };
 
   return (
-    <form id="create-member-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form id="create-member-form" onSubmit={handleSubmit} className="flex flex-col gap-3 py-1">
 
       {/* ── Required fields ──────────────────────────────────────────────────── */}
       <FieldWrapper>
@@ -133,6 +151,69 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
         <FieldError message={errors.memberType} />
       </FieldWrapper>
 
+      {/* ── Login credentials ────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        <Separator className="flex-1" />
+        <span className="text-xs text-muted-foreground shrink-0">Login Credentials</span>
+        <Separator className="flex-1" />
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        Set a password so this member can log in immediately. Leave blank to let them register later.
+      </p>
+
+      <FieldWrapper>
+        <Label htmlFor="cm-password">Password</Label>
+        <div className="relative">
+          <Input
+            id="cm-password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Min. 6 characters"
+            autoComplete="new-password"
+            value={form.password ?? ""}
+            onChange={(e) => set("password", e.target.value || undefined)}
+            className="pr-10"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+            onClick={() => setShowPassword((v) => !v)}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+        <FieldError message={errors.password} />
+      </FieldWrapper>
+
+      <FieldWrapper>
+        <Label htmlFor="cm-confirmPassword">Confirm Password</Label>
+        <div className="relative">
+          <Input
+            id="cm-confirmPassword"
+            type={showConfirm ? "text" : "password"}
+            placeholder="Re-enter password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="pr-10"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+            onClick={() => setShowConfirm((v) => !v)}
+            tabIndex={-1}
+          >
+            {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+        <FieldError message={errors.confirmPassword} />
+      </FieldWrapper>
+
       {/* ── Optional fields ──────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
@@ -175,6 +256,3 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
     </form>
   );
 }
-
-
-

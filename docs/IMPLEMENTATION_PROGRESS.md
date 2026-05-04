@@ -134,43 +134,80 @@
 
 ---
 
-## Phase 6 — Payment Management (Treasurer) 🚧
+## Phase 6 — Payment Management (Treasurer) ✅
 
 **Goal:** Treasurer can view and record payment transactions.
 
 | Item | File | Status |
 |------|------|--------|
-| `usePaymentSummaries(filter)` hook | `features/payments/hooks/usePaymentSummaries.ts` | 🚧 |
-| `usePaymentHistory(memberId)` hook | `features/payments/hooks/usePaymentHistory.ts` | 🚧 |
+| `usePaymentSummaries(filter)` hook | `features/payments/hooks/usePaymentSummaries.ts` | ✅ |
+| `usePaymentHistory(memberId)` hook | `features/payments/hooks/usePaymentHistory.ts` | ✅ |
 | `useRecordPayment` hook | `features/payments/hooks/useRecordPayment.ts` | ✅ |
-| `PaymentStatusBadge` component | `features/payments/components/PaymentStatusBadge/` | 🚧 |
-| `PaymentHistoryTable` component | `features/payments/components/PaymentHistoryTable/` | 🚧 |
-| `PaymentTable` component | `features/payments/components/PaymentTable/` | 🚧 |
-| `RecordPaymentModal` component | `features/payments/components/RecordPaymentModal/` | 🚧 |
-| Payments page | `app/(treasurer)/treasurer/payments/page.tsx` | 🚧 |
+| `useRecordBulkPayment` hook | `features/payments/hooks/useRecordBulkPayment.ts` | ✅ |
+| `useMemberPaymentSummary` hook | `features/payments/hooks/useMemberPaymentSummary.ts` | ✅ |
+| `PaymentStatusBadge` component | `features/payments/components/PaymentStatusBadge/` | ✅ |
+| `PaymentHistoryTable` component | `features/payments/components/PaymentHistoryTable/` | ✅ |
+| `PaymentTable` component | `features/payments/components/PaymentTable/` | ✅ |
+| `RecordPaymentModal` component | `features/payments/components/RecordPaymentModal/` | ✅ |
+| `PaymentStepper` component (3-step bulk flow) | `features/payments/components/PaymentStepper/` | ✅ |
+| `RecentTransactionsTable` component | `features/payments/components/RecentTransactionsTable/` | ✅ |
+| Payments page | `app/(treasurer)/treasurer/payments/page.tsx` | ✅ |
+| Record payment page | `app/(treasurer)/treasurer/payments/record/page.tsx` | ✅ |
+
+**Notes:**
+- `PaymentStepper` is a 3-step flow: Select Member → Payment Details → Confirmation
+- Step 2 supports MONTHLY_DUES (multi-month grid, ₱60/month) and MEMBERSHIP_FEE (single amount)
+- Membership Fee option auto-hides when member has already paid it
+- Bulk payments use `Promise.allSettled` — partial success is surfaced cleanly
+- Monthly dues rate fixed to ₱60 in seed data (`001_initial_schema.sql`) and live DB migration (`002_update_monthly_dues_to_60.sql`)
+- Payment date set internally to today (not exposed in UI)
 
 ---
 
-## Phase 7 — Reports (Treasurer) ⬜
+## Phase 7 — Reports (Treasurer) ✅
 
 **Goal:** Treasurer can generate and export payment reports.
 
 | Item | File | Status |
 |------|------|--------|
-| `ReportFilters` component | `features/reports/components/ReportFilters/` | ⬜ |
-| `ReportPreview` component | `features/reports/components/ReportPreview/` | ⬜ |
-| Reports page | `app/(treasurer)/reports/page.tsx` | ⬜ |
+| `report.types.ts` / `report.schemas.ts` | `features/reports/types/` | ✅ |
+| `report.repository.ts` | `features/reports/repositories/` | ✅ |
+| `useGenerateReport` hook | `features/reports/hooks/useGenerateReport.ts` | ✅ |
+| `ReportFilters` component | `features/reports/components/ReportFilters/` | ✅ |
+| `ReportPreview` component | `features/reports/components/ReportPreview/` | ✅ |
+| Reports page | `app/(treasurer)/treasurer/reports/page.tsx` | ✅ |
+
+**Notes:**
+- Supports 5 report types: Payment Summary, Outstanding Balance, Membership Status, Monthly Collection, Member Standing
+- JSON format renders inline preview with metric cards and tables
+- CSV / Excel / PDF formats trigger automatic file download
+- Date range defaults to Jan 1 of current year → today
+- Empty state fills full viewport height (no grey gap)
 
 ---
 
-## Phase 8 — Member Dashboard ⬜
+## Phase 8 — Member Dashboard ✅
 
 **Goal:** Member can view their own dues status and payment history.
 
 | Item | File | Status |
 |------|------|--------|
-| `MemberDashboard` component | `features/members/components/MemberDashboard/` | ⬜ |
-| `MemberCard` component | `features/members/components/MemberCard/` | ⬜ |
-| `StandingBadge` component | `features/members/components/StandingBadge/` | ⬜ |
-| `PaymentHistoryTable` component | `features/payments/components/PaymentHistoryTable/` | ⬜ |
-| Member dashboard page | `app/(member)/dashboard/page.tsx` | ⬜ |
+| `memberDashboardRepository` | `features/members/repositories/member-dashboard.repository.ts` | ✅ |
+| `useMemberDashboard` hook | `features/members/hooks/useMemberDashboard.ts` | ✅ |
+| `StandingBanner` component | `features/members/components/MemberDashboard/StandingBanner.tsx` | ✅ |
+| `BalanceSummaryCard` component | `features/members/components/MemberDashboard/BalanceSummaryCard.tsx` | ✅ |
+| `DuesGrid` component | `features/members/components/MemberDashboard/DuesGrid.tsx` | ✅ |
+| `MemberProfileCard` component | `features/members/components/MemberDashboard/MemberProfileCard.tsx` | ✅ |
+| `MemberCard` component | `features/members/components/MemberCard/` | ✅ |
+| `StandingBadge` component | `features/members/components/StandingBadge/` | ✅ |
+| `PaymentHistoryTable` component | `features/payments/components/PaymentHistoryTable/` | ✅ |
+| Member dashboard page | `app/(member)/member/dashboard/page.tsx` | ✅ |
+
+**Notes:**
+- `GET /api/dashboard/member` API route already existed — resolves `profile_id → member_id` then queries `member_payment_summary` view
+- New members with no payments get a zeroed standing response (not a 404)
+- `StandingBanner` shows green (COMPLETE) or red (HAS_BALANCE) full-width banner
+- `BalanceSummaryCard` shows membership fee status (FULL_TIME only), dues progress bar, outstanding balance
+- `DuesGrid` renders a 6-column 12-month grid with paid months highlighted in green
+- Dashboard page layout: header → banner → profile + balance (3-col grid) → dues grid → payment history table
+- `usePaymentHistory(memberId)` feeds the history table using the memberId from the dashboard response
