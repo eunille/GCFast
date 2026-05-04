@@ -77,26 +77,29 @@ export const POST = apiHandler(async (req: Request) => {
 
   const supabase = await createSupabaseServer(req);
 
-  // 3. Check for duplicate effective_from (unique constraint in DB)
-  const { data: existing } = await supabase
+  // 3. Check if a rate with the same effective_from already exists for this type combo.
+  //    If it does (same-day update scenario), just update its amount in place — no new row needed.
+  const { data: sameDay } = await supabase
     .from("dues_configurations")
-    .select("id")
+    .select("id, payment_type, member_type, amount, effective_from, effective_until, created_at")
     .eq("payment_type", paymentType)
     .eq("member_type", memberType)
     .eq("effective_from", effectiveFrom)
     .maybeSingle();
 
-  if (existing) {
-    return errorResponse(
-      ErrorCodes.CONFLICT,
-      "A rate for this payment type, member type, and effective date already exists",
-      409
-    );
+  if (sameDay) {
+    const { data: updated, error: updateError } = await supabase
+      .from("dues_configurations")
+      .update({ amount })
+      .eq("id", sameDay.id)
+      .select("id, payment_type, member_type, amount, effective_from, effective_until, created_at")
+      .single();
+
+    if (updateError) throw new Error(updateError.message);
+    return successResponse(mapDuesConfigRow(updated as unknown as DuesConfigRow));
   }
 
   // 4. Close the current active rate (set effective_until to effectiveFrom - 1 day)
-  //    The DB comment says: "Add a new row when rates change — never update old ones."
-  //    We close the previous open-ended row so history is accurate.
   await supabase
     .from("dues_configurations")
     .update({

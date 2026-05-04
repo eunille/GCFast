@@ -211,3 +211,32 @@
 - `DuesGrid` renders a 6-column 12-month grid with paid months highlighted in green
 - Dashboard page layout: header → banner → profile + balance (3-col grid) → dues grid → payment history table
 - `usePaymentHistory(memberId)` feeds the history table using the memberId from the dashboard response
+
+---
+
+## Phase 10 — Dues Configuration Management ✅
+
+**Goal:** Treasurer can view and set membership fee and monthly dues rates.
+
+| Item | File | Status |
+|------|------|--------|
+| `DuesConfigFilter` type | `features/dues-configurations/repositories/dues-config.repository.ts` | ✅ |
+| `duesConfigRepository.getAll()` | `features/dues-configurations/repositories/dues-config.repository.ts` | ✅ |
+| `duesConfigRepository.create()` | `features/dues-configurations/repositories/dues-config.repository.ts` | ✅ |
+| `useDuesConfigurations(filter)` hook | `features/dues-configurations/hooks/useDuesConfigurations.ts` | ✅ |
+| `useCreateDuesConfig()` hook | `features/dues-configurations/hooks/useCreateDuesConfig.ts` | ✅ |
+| `DuesConfigTable` component | `features/dues-configurations/components/DuesConfigTable/` | ✅ |
+| `SetRateModal` component | `features/dues-configurations/components/SetRateModal/` | ✅ |
+| Dues config page | `app/(treasurer)/treasurer/dues/page.tsx` | ✅ |
+| Treasurer nav updated | `app/(treasurer)/treasurer/layout.tsx` | ✅ |
+
+**Notes:**
+- `GET /api/dues-configurations` + `POST /api/dues-configurations` routes were already implemented server-side
+- Repository extended: `getAll(filter?)` builds query string, `create(input)` throws with server error message on failure
+- `useDuesConfigurations` defaults to `activeOnly: true`; passing `activeOnly: false` shows full history
+- `DuesConfigTable` shows Active (green) or Closed (muted, with date) badge per row
+- `SetRateModal` enforces business rules client-side: ASSOCIATE cannot have MEMBERSHIP_FEE; effective date cannot be in the past; Associate option is disabled when MEMBERSHIP_FEE is selected
+- Warning banner in modal explains that setting a new rate closes the current one automatically
+- On success: invalidates both `["dues-configurations"]` and `["dues-configurations", "current"]` via broad key match
+- History toggle uses `Checkbox` (shadcn `switch` not installed)
+- Treasurer sidebar now has 5 items: Dashboard · Members · Payments · Reports · Dues Config
