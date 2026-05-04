@@ -54,19 +54,20 @@ export function MemberList() {
       </div>
 
       {/* ── Stat card ───────────────────────────────────────────────────────── */}
-      <Card className="w-72 shadow-sm rounded-xl">
-        <CardContent className="flex items-center justify-between px-4 py-3">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-white py-2.5 px-4 shadow-sm">
           <div className="flex flex-col gap-0.5">
-            <p className="text-xs text-muted-foreground">Total Members</p>
-            <p className="text-2xl font-bold text-foreground leading-none">
+            <p className="text-xs font-medium text-muted-foreground">Total Members</p>
+            <p className="text-2xl font-bold text-foreground leading-tight">
               {meta?.count ?? "—"}
             </p>
+            <p className="text-xs text-muted-foreground">active members</p>
           </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent">
-            <Users className="h-5 w-5 text-accent-foreground" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100">
+            <Users className="h-5 w-5 text-blue-500" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* ── Table panel ─────────────────────────────────────────────────────── */}
       <Card className="shadow-sm">

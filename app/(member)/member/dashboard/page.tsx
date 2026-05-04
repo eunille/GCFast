@@ -56,25 +56,21 @@ interface StatCardProps {
 
 function StatCard({ label, value, sublabel, icon, iconClass }: StatCardProps) {
   return (
-    <Card>
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold text-foreground leading-tight">{value}</p>
-            <p className="text-xs text-muted-foreground">{sublabel}</p>
-          </div>
-          <div
-            className={cn(
-              "h-11 w-11 shrink-0 rounded-full flex items-center justify-center",
-              iconClass
-            )}
-          >
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center justify-between rounded-xl border border-border bg-white py-2.5 px-4 shadow-sm">
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="text-2xl font-bold text-foreground leading-tight">{value}</p>
+        <p className="text-xs text-muted-foreground">{sublabel}</p>
+      </div>
+      <div
+        className={cn(
+          "h-9 w-9 shrink-0 rounded-full flex items-center justify-center",
+          iconClass
+        )}
+      >
+        {icon}
+      </div>
+    </div>
   );
 }
 

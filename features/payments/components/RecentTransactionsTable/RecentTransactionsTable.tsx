@@ -128,7 +128,7 @@ export function RecentTransactionsTable({ onRecord }: Props) {
             <SelectContent>
               <SelectItem value="all">All Colleges</SelectItem>
               {colleges.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.code}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

@@ -37,13 +37,13 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, sub, icon, iconBg }: MetricCardProps) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-white p-5 shadow-sm">
+    <div className="flex items-center justify-between rounded-xl border border-border bg-white py-2.5 px-4 shadow-sm">
       <div className="flex flex-col gap-1">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-2xl font-bold text-foreground">{value}</p>
         <p className="text-xs text-muted-foreground">{sub}</p>
       </div>
-      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${iconBg}`}>
+      <div className={`flex h-9 w-9 items-center justify-center rounded-full ${iconBg}`}>
         {icon}
       </div>
     </div>

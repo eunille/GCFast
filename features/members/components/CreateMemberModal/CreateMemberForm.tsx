@@ -221,27 +221,15 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
         <Separator className="flex-1" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <FieldWrapper>
-          <Label htmlFor="cm-empId">Employee ID</Label>
-          <Input
-            id="cm-empId"
-            placeholder="e.g. EMP-001"
-            value={form.employeeId ?? ""}
-            onChange={(e) => set("employeeId", e.target.value || undefined)}
-          />
-        </FieldWrapper>
-
-        <FieldWrapper>
-          <Label htmlFor="cm-joinedAt">Joined Date</Label>
-          <Input
-            id="cm-joinedAt"
-            type="date"
-            value={form.joinedAt ?? ""}
-            onChange={(e) => set("joinedAt", e.target.value || undefined)}
-          />
-        </FieldWrapper>
-      </div>
+      <FieldWrapper>
+        <Label htmlFor="cm-empId">Employee ID</Label>
+        <Input
+          id="cm-empId"
+          placeholder="e.g. EMP-001"
+          value={form.employeeId ?? ""}
+          onChange={(e) => set("employeeId", e.target.value || undefined)}
+        />
+      </FieldWrapper>
 
       <FieldWrapper>
         <Label htmlFor="cm-notes">Notes</Label>
