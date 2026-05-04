@@ -18,6 +18,7 @@ import { useColleges } from "@/lib/hooks/useColleges";
 import { createMemberSchema } from "../../types/member.schemas";
 import type { CreateMemberInput } from "@/lib/models";
 import { ZodError } from "zod";
+import { User, Briefcase, FileText } from "lucide-react";
 
 interface Props {
   onSubmit: (data: CreateMemberInput) => void;
@@ -33,6 +34,26 @@ function FieldWrapper({ children }: { children: React.ReactNode }) {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-xs text-destructive">{message}</p>;
+}
+
+function SectionHeader({
+  icon,
+  title,
+}: {
+  icon: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary shrink-0">
+        {icon}
+      </div>
+      <span className="text-sm font-semibold text-foreground tracking-wide">
+        {title}
+      </span>
+      <Separator className="flex-1" />
+    </div>
+  );
 }
 
 export function CreateMemberForm({ onSubmit, isLoading }: Props) {
@@ -65,116 +86,155 @@ export function CreateMemberForm({ onSubmit, isLoading }: Props) {
   };
 
   return (
-    <form id="create-member-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-      {/* ── Required fields ──────────────────────────────────────────────────── */}
-      <FieldWrapper>
-        <Label htmlFor="cm-fullName">
-          Full Name <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="cm-fullName"
-          placeholder="e.g. Juan dela Cruz"
-          value={form.fullName ?? ""}
-          onChange={(e) => set("fullName", e.target.value)}
+    <form
+      id="create-member-form"
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-6"
+    >
+      {/* ── Personal Information ─────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <SectionHeader
+          icon={<User className="w-4 h-4" />}
+          title="Personal Information"
         />
-        <FieldError message={errors.fullName} />
-      </FieldWrapper>
 
-      <FieldWrapper>
-        <Label htmlFor="cm-email">
-          Email <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="cm-email"
-          type="email"
-          placeholder="email@example.com"
-          value={form.email ?? ""}
-          onChange={(e) => set("email", e.target.value)}
-        />
-        <FieldError message={errors.email} />
-      </FieldWrapper>
+        <div className="flex flex-col gap-4 pl-1">
+          <FieldWrapper>
+            <Label htmlFor="cm-fullName">
+              Full Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="cm-fullName"
+              placeholder="e.g. Juan dela Cruz"
+              value={form.fullName ?? ""}
+              onChange={(e) => set("fullName", e.target.value)}
+            />
+            <FieldError message={errors.fullName} />
+          </FieldWrapper>
 
-      <FieldWrapper>
-        <Label>
-          College <span className="text-destructive">*</span>
-        </Label>
-        <Select value={form.collegeId ?? ""} onValueChange={(v) => set("collegeId", v)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select college" />
-          </SelectTrigger>
-          <SelectContent>
-            {colleges.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.code} — {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <FieldError message={errors.collegeId} />
-      </FieldWrapper>
-
-      <FieldWrapper>
-        <Label>
-          Member Type <span className="text-destructive">*</span>
-        </Label>
-        <Select
-          value={form.memberType ?? "FULL_TIME"}
-          onValueChange={(v) => set("memberType", v)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="FULL_TIME">Full-Time</SelectItem>
-            <SelectItem value="ASSOCIATE">Associate</SelectItem>
-          </SelectContent>
-        </Select>
-        <FieldError message={errors.memberType} />
-      </FieldWrapper>
-
-      {/* ── Optional fields ──────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground shrink-0">Optional</span>
-        <Separator className="flex-1" />
+          <FieldWrapper>
+            <Label htmlFor="cm-email">
+              Email <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="cm-email"
+              type="email"
+              placeholder="email@example.com"
+              value={form.email ?? ""}
+              onChange={(e) => set("email", e.target.value)}
+            />
+            <FieldError message={errors.email} />
+          </FieldWrapper>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <FieldWrapper>
-          <Label htmlFor="cm-empId">Employee ID</Label>
-          <Input
-            id="cm-empId"
-            placeholder="e.g. EMP-001"
-            value={form.employeeId ?? ""}
-            onChange={(e) => set("employeeId", e.target.value || undefined)}
-          />
-        </FieldWrapper>
+      {/* ── Employment Information ───────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <SectionHeader
+          icon={<Briefcase className="w-4 h-4" />}
+          title="Employment Information"
+        />
 
-        <FieldWrapper>
-          <Label htmlFor="cm-joinedAt">Joined Date</Label>
-          <Input
-            id="cm-joinedAt"
-            type="date"
-            value={form.joinedAt ?? ""}
-            onChange={(e) => set("joinedAt", e.target.value || undefined)}
-          />
-        </FieldWrapper>
+        <div className="flex flex-col gap-4 pl-1">
+          <FieldWrapper>
+            <Label>
+              College <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.collegeId ?? ""}
+              onValueChange={(v) => set("collegeId", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select college" />
+              </SelectTrigger>
+              <SelectContent>
+                {colleges.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.code} — {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError message={errors.collegeId} />
+          </FieldWrapper>
+
+          <FieldWrapper>
+            <Label>
+              Member Type <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.memberType ?? "FULL_TIME"}
+              onValueChange={(v) => set("memberType", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="FULL_TIME">Full-Time</SelectItem>
+                <SelectItem value="ASSOCIATE">Associate</SelectItem>
+              </SelectContent>
+            </Select>
+            <FieldError message={errors.memberType} />
+          </FieldWrapper>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FieldWrapper>
+              <Label htmlFor="cm-empId">
+                Employee ID{" "}
+                <span className="text-muted-foreground font-normal text-xs">
+                  (Optional)
+                </span>
+              </Label>
+              <Input
+                id="cm-empId"
+                placeholder="e.g. EMP-001"
+                value={form.employeeId ?? ""}
+                onChange={(e) => set("employeeId", e.target.value || undefined)}
+              />
+            </FieldWrapper>
+
+            <FieldWrapper>
+              <Label htmlFor="cm-joinedAt">
+                Joined Date{" "}
+                <span className="text-muted-foreground font-normal text-xs">
+                  (Optional)
+                </span>
+              </Label>
+              <Input
+                id="cm-joinedAt"
+                type="date"
+                value={form.joinedAt ?? ""}
+                onChange={(e) => set("joinedAt", e.target.value || undefined)}
+              />
+            </FieldWrapper>
+          </div>
+        </div>
       </div>
 
-      <FieldWrapper>
-        <Label htmlFor="cm-notes">Notes</Label>
-        <Input
-          id="cm-notes"
-          placeholder="Any additional notes…"
-          value={form.notes ?? ""}
-          onChange={(e) => set("notes", e.target.value || undefined)}
+      {/* ── Additional Notes ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <SectionHeader
+          icon={<FileText className="w-4 h-4" />}
+          title="Additional Notes"
         />
-      </FieldWrapper>
 
+        <div className="pl-1">
+          <FieldWrapper>
+            <Label htmlFor="cm-notes">
+              Notes{" "}
+              <span className="text-muted-foreground font-normal text-xs">
+                (Optional)
+              </span>
+            </Label>
+            <Input
+              id="cm-notes"
+              placeholder="Any additional notes…"
+              value={form.notes ?? ""}
+              onChange={(e) => set("notes", e.target.value || undefined)}
+            />
+          </FieldWrapper>
+        </div>
+      </div>
     </form>
   );
 }
-
-
-

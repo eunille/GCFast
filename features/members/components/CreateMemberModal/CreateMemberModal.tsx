@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, UserPlus2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,10 +38,18 @@ export function CreateMemberModal() {
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Member</DialogTitle>
-          <DialogDescription>
-            Fill in the member details below. Fields marked with * are required.
-          </DialogDescription>
+          <div className="flex items-center gap-5">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent text-primary shrink-0">
+              <UserPlus2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <DialogTitle>Add New Member</DialogTitle>
+              <DialogDescription>
+                Fill in the member details below. Fields marked with * are
+                required.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <CreateMemberForm
@@ -54,7 +62,9 @@ export function CreateMemberModal() {
                 setOpen(false);
               },
               onError: (err) => {
-                toast.error("Failed to add member", { description: err.message });
+                toast.error("Failed to add member", {
+                  description: err.message,
+                });
               },
             })
           }
@@ -79,6 +89,3 @@ export function CreateMemberModal() {
     </Dialog>
   );
 }
-
-
-
