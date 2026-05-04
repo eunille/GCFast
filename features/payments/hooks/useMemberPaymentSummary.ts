@@ -1,23 +1,23 @@
 // features/payments/hooks/useMemberPaymentSummary.ts
-// Layer 3 — APPLICATION: Derives a single member's MemberPaymentSummary from the full summaries list
+// Layer 3 — APPLICATION: Fetches the payment summary row for a single member
 
 "use client";
 
-import { useMemo } from "react";
-import { usePayments } from "./usePayments";
-import type { MemberPaymentSummary } from "../types/payment.types";
+import { useQuery } from "@tanstack/react-query";
+import { paymentRepository } from "../repositories/payment.repository";
+import type { PaymentSummaryRow } from "@/lib/models";
 
-export function useMemberPaymentSummary(memberId: string): {
-  summary: MemberPaymentSummary | null;
-  isLoading: boolean;
-  isError: boolean;
-} {
-  const { data, isLoading, isError } = usePayments();
-
-  const summary = useMemo(
-    () => data?.find((s) => s.memberId === memberId) ?? null,
-    [data, memberId]
-  );
-
-  return { summary, isLoading, isError };
+export function useMemberPaymentSummary(memberId: string | null) {
+  return useQuery<PaymentSummaryRow | null>({
+    queryKey: ["payment-summaries", "member", memberId],
+    queryFn: async () => {
+      const result = await paymentRepository.getSummaries({
+        memberId: memberId!,
+        pageSize: 1,
+      });
+      return result.data[0] ?? null;
+    },
+    enabled: !!memberId,
+    staleTime: 30 * 1000,
+  });
 }

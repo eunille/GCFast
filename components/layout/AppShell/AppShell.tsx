@@ -38,7 +38,7 @@ export function AppShell({ children, navItems }: Props) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 min-h-0 overflow-y-auto p-6 bg-white">{children}</main>
       </div>
     </SidebarProvider>
   );

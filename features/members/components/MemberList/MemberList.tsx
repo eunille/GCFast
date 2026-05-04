@@ -42,7 +42,7 @@ export function MemberList() {
   const columns = getMemberColumns(handleView, handleNavigate);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="-m-6 p-6 min-h-full bg-white flex flex-col gap-6">
       {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">

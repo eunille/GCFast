@@ -310,8 +310,8 @@ ON CONFLICT (month, year) DO NOTHING;
 
 INSERT INTO dues_configurations (payment_type, member_type, amount, effective_from) VALUES
   ('MEMBERSHIP_FEE', 'FULL_TIME', 200.00, '2025-01-01'),
-  ('MONTHLY_DUES',   'FULL_TIME',  50.00, '2025-01-01'),
-  ('MONTHLY_DUES',   'ASSOCIATE',  30.00, '2025-01-01')
+  ('MONTHLY_DUES',   'FULL_TIME',  60.00, '2025-01-01'),
+  ('MONTHLY_DUES',   'ASSOCIATE',  60.00, '2025-01-01')
 ON CONFLICT (payment_type, member_type, effective_from) DO NOTHING;
 
 -- =============================================================================
