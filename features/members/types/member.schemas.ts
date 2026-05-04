@@ -31,6 +31,18 @@ export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 export const apiCreateMemberSchema = createMemberSchema;
 export const apiUpdateMemberSchema = updateMemberSchema;
 
+// ─── Member self-update (member editing own limited fields) ─────────────────
+
+export const selfUpdateMemberSchema = z.object({
+  fullName:   z.string().min(2, "Full name must be at least 2 characters").max(100).trim().optional(),
+  employeeId: z.string().max(50).trim().optional(),
+  notes:      z.string().max(500).trim().optional(),
+});
+
+export type SelfUpdateMemberInput = z.infer<typeof selfUpdateMemberSchema>;
+
+// ─── Filter ───────────────────────────────────────────────────────────────────
+
 export const apiMemberFilterSchema = z
   .object({
     collegeId:  z.string().uuid().optional(),
