@@ -1,18 +1,25 @@
 // features/payments/components/PaymentStepper/ConfirmationStep.tsx
 // Layer 4 — PRESENTATIONAL: Step 3 — review details before submitting
 
+"use client";
+
 import { formatCurrency } from "@/lib/utils/format";
+import { MONTHLY_FEE } from "./PaymentDetailsStep";
+import { useCurrentRates } from "@/features/dues-configurations/hooks/useCurrentRates";
 import type { Member } from "@/lib/models";
 import type { PaymentFormValues } from "./PaymentDetailsStep";
-import type { AcademicPeriod } from "@/lib/models";
+
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 interface Props {
   member: Member;
   values: PaymentFormValues;
-  periods: AcademicPeriod[];
 }
 
-function row(label: string, value: string) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-start py-3 border-b last:border-0 gap-4">
       <span className="text-sm text-muted-foreground">{label}</span>
@@ -21,13 +28,23 @@ function row(label: string, value: string) {
   );
 }
 
-export function ConfirmationStep({ member, values, periods }: Props) {
-  const periodLabel =
-    values.paymentType === "MONTHLY_DUES" && values.academicPeriodId
-      ? periods.find((p) => p.id === values.academicPeriodId)?.label ?? "—"
-      : null;
+export function ConfirmationStep({ member, values }: Props) {
+  const { data: rates } = useCurrentRates();
 
-  const amount = parseFloat(values.amountPaid);
+  const monthlyFee =
+    member.memberType === "FULL_TIME"
+      ? (rates?.MONTHLY_DUES_FULL_TIME?.amount ?? MONTHLY_FEE)
+      : (rates?.MONTHLY_DUES_ASSOCIATE?.amount ?? MONTHLY_FEE);
+
+  const isMonthlyDues = values.paymentType === "MONTHLY_DUES";
+  const totalAmount = isMonthlyDues
+    ? values.selectedMonths.length * monthlyFee
+    : parseFloat(values.amountPaid);
+
+  const selectedMonthLabels = [...values.selectedMonths]
+    .sort((a, b) => a - b)
+    .map((m) => MONTHS_SHORT[m - 1])
+    .join(", ");
 
   return (
     <div className="flex flex-col gap-5">
@@ -40,23 +57,48 @@ export function ConfirmationStep({ member, values, periods }: Props) {
 
       <div className="rounded-lg border border-border bg-muted/30 p-4">
         <div className="flex flex-col divide-y">
-          {row("Member", member.fullName)}
-          {member.collegeName && row("College", member.collegeName)}
-          {row(
-            "Payment Type",
-            values.paymentType === "MEMBERSHIP_FEE" ? "Membership Fee" : "Monthly Dues"
+          <Row label="Member" value={member.fullName} />
+          {member.collegeName && <Row label="College" value={member.collegeName} />}
+          <Row
+            label="Payment Type"
+            value={isMonthlyDues ? "Monthly Dues" : "Membership Fee"}
+          />
+
+          {isMonthlyDues && (
+            <>
+              <Row
+                label={`Month${values.selectedMonths.length > 1 ? "s" : ""} (${values.selectedMonths.length})`}
+                value={selectedMonthLabels}
+              />
+              <Row label="Rate per Month" value={formatCurrency(monthlyFee)} />
+            </>
           )}
-          {periodLabel && row("Academic Period", periodLabel)}
-          {row("Payment Date", new Date(values.paymentDate).toLocaleDateString("en-PH", {
-            year: "numeric", month: "long", day: "numeric",
-          }))}
-          {row("Amount", formatCurrency(isNaN(amount) ? 0 : amount))}
-          {values.notes && row("Notes", values.notes)}
+
+          <Row
+            label="Payment Date"
+            value={new Date().toLocaleDateString("en-PH", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          />
+
+          {/* Total — highlighted */}
+          <div className="flex justify-between items-center py-3 gap-4">
+            <span className="text-sm font-semibold text-foreground">Total Amount</span>
+            <span className="text-base font-bold text-accent">
+              {formatCurrency(isNaN(totalAmount) ? 0 : totalAmount)}
+            </span>
+          </div>
+
+          {values.notes && <Row label="Notes" value={values.notes} />}
         </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        This will record the payment and update the member&apos;s payment status immediately.
+        {isMonthlyDues
+          ? `This will record ${values.selectedMonths.length} payment${values.selectedMonths.length > 1 ? "s" : ""} and update the member's status immediately.`
+          : "This will record the payment and update the member's payment status immediately."}{" "}
         This action cannot be undone from the UI.
       </p>
     </div>

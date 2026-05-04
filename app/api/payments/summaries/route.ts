@@ -37,6 +37,7 @@ export const GET = apiHandler(async (req: Request) => {
     sortBy,
     sortOrder,
     search,
+    memberId,
     collegeId,
     memberType,
     status,
@@ -54,6 +55,7 @@ export const GET = apiHandler(async (req: Request) => {
     .select("*", { count: "exact" })
     .range(from, to);
 
+  if (memberId) query = query.eq("member_id", memberId);
   if (collegeId) query = query.eq("college_id", collegeId);
   if (memberType) query = query.eq("member_type", memberType);
   if (status) query = query.eq("status", status);

@@ -91,6 +91,7 @@ export interface PaymentSummaryQuery {
   sortBy?: "full_name" | "outstanding_balance" | "college_name" | "periods_paid";
   sortOrder?: "asc" | "desc";
   search?: string;
+  memberId?: string;
   collegeId?: string;
   memberType?: MemberType;
   status?: PaymentStatus;

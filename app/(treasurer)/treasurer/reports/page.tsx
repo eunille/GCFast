@@ -135,7 +135,7 @@ export default function ReportsPage() {
 
       {/* Empty state */}
       {!report && !isPending && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-16 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 text-center min-h-48">
           <p className="text-sm font-medium text-muted-foreground">
             Configure filters above and click &quot;Generate Report&quot;
           </p>
