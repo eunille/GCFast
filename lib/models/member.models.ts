@@ -25,6 +25,8 @@ export interface Member {
 export interface CreateMemberInput {
   fullName: string;
   email: string;
+  /** When provided, an auth account is created so the member can log in immediately. */
+  password?: string;
   collegeId: string;
   memberType: MemberType;
   employeeId?: string;

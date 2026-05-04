@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { apiHandler } from "@/lib/utils/api-handler";
 import { withAuth } from "@/lib/middleware/withAuth";
 import { withRole } from "@/lib/middleware/withRole";
@@ -8,6 +7,7 @@ import { ErrorCodes } from "@/lib/types/error-codes";
 import { toRange, buildMeta } from "@/lib/utils/pagination";
 import { applySearch, applySorting } from "@/lib/utils/query-builder";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   apiMemberFilterSchema,
   apiCreateMemberSchema,
@@ -78,7 +78,8 @@ export const POST = apiHandler(async (req: Request) => {
   if (!parsed.success) return parsed.response;
 
   const supabase = await createSupabaseServer(req);
-  const { fullName, email, collegeId, memberType, employeeId, joinedAt, notes } = parsed.data;
+  const supabaseAdmin = getSupabaseAdmin();
+  const { fullName, email, password, collegeId, memberType, employeeId, joinedAt, notes } = parsed.data;
 
   // Email uniqueness check
   const { count: emailCount } = await supabase
@@ -100,6 +101,49 @@ export const POST = apiHandler(async (req: Request) => {
     return errorResponse(ErrorCodes.VALIDATION_ERROR, "College not found", 400);
   }
 
+  // ── Auth account creation (when password is provided) ─────────────────────
+  // If a password was supplied, create a Supabase auth user first so the member
+  // can log in immediately. We use email_confirm: true to bypass the confirmation
+  // email. If auth creation fails we abort before touching the members table.
+  let profileId: string | null = null;
+
+  if (password) {
+    // Guard against duplicate auth accounts
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const alreadyExists = existingUsers?.users?.some(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+    if (alreadyExists) {
+      return errorResponse(
+        ErrorCodes.ALREADY_EXISTS,
+        "An auth account with this email already exists. Remove the password or use a different email.",
+        409
+      );
+    }
+
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName, role: "member" },
+    });
+
+    if (authError) {
+      return errorResponse(ErrorCodes.INTERNAL_ERROR, authError.message, 500);
+    }
+
+    profileId = authData.user.id;
+  } else {
+    // No password: check if a profile already exists (member registered independently)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+    profileId = existingProfile?.id ?? null;
+  }
+
+  // ── Insert member record ───────────────────────────────────────────────────
   const { data, error } = await supabase
     .from("members")
     .insert({
@@ -111,12 +155,19 @@ export const POST = apiHandler(async (req: Request) => {
       joined_at: joinedAt,
       notes,
       is_active: true,
+      profile_id: profileId,
       created_by: authResult.id,
     })
     .select(MEMBER_SELECT)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Rollback: delete the auth user we just created to avoid orphaned accounts
+    if (profileId && password) {
+      await supabaseAdmin.auth.admin.deleteUser(profileId);
+    }
+    throw new Error(error.message);
+  }
 
   return successResponse(mapApiMemberFromDb(data as Record<string, unknown>), undefined, 201);
 });

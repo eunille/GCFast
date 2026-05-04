@@ -61,5 +61,24 @@ export const POST = apiHandler(async (req: Request) => {
     return errorResponse(ErrorCodes.INTERNAL_ERROR, error.message, 500);
   }
 
+  // Auto-link member record if one already exists with this email.
+  // This handles the case where the Treasurer created a member record before
+  // the member registered an auth account.
+  if (role === "member") {
+    const { data: existingMember } = await supabaseAdmin
+      .from("members")
+      .select("id")
+      .eq("email", email)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (existingMember?.id) {
+      await supabaseAdmin
+        .from("members")
+        .update({ profile_id: data.user.id })
+        .eq("id", existingMember.id);
+    }
+  }
+
   return successResponse({ id: data.user.id, email: data.user.email }, undefined, 201);
 });

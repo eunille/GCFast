@@ -11,24 +11,45 @@ export const GET = apiHandler(async (req: Request) => {
 
   const supabase = await createSupabaseServer(req);
 
-  // 2. Resolve member_id via reverse FK — profiles has no member_id column
-  // members.profile_id → profiles.id is the actual FK direction
-  const { data: memberLink } = await supabase
+  // 2. Resolve member_id — first try profile_id (normal linked account),
+  //    then fall back to email match (account created before invite flow).
+  let memberId: string | null = null;
+
+  const { data: byProfile } = await supabase
     .from("members")
     .select("id")
     .eq("profile_id", authResult.id)
     .eq("is_active", true)
-    .single();
+    .maybeSingle();
 
-  if (!memberLink?.id) {
+  if (byProfile?.id) {
+    memberId = byProfile.id;
+  } else if (authResult.email) {
+    // Fallback: find by email and auto-link profile_id so future lookups are fast
+    const { data: byEmail } = await supabase
+      .from("members")
+      .select("id")
+      .eq("email", authResult.email)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (byEmail?.id) {
+      memberId = byEmail.id;
+      // Auto-link so the profile_id lookup succeeds next time
+      await supabase
+        .from("members")
+        .update({ profile_id: authResult.id })
+        .eq("id", memberId);
+    }
+  }
+
+  if (!memberId) {
     return errorResponse(
       ErrorCodes.NOT_FOUND,
       "No member record linked to this account",
       404
     );
   }
-
-  const memberId = memberLink.id;
 
   // 3. Query member_payment_summary view for own record only
   const { data, error } = await supabase
@@ -56,7 +77,6 @@ export const GET = apiHandler(async (req: Request) => {
       colleges: { name: string }[] | { name: string } | null;
     };
     const row = member as unknown as MemberRow;
-    // Supabase returns joined one-to-one as array — normalise to single object
     const collegeObj = Array.isArray(row.colleges) ? row.colleges[0] : row.colleges;
 
     return successResponse({
