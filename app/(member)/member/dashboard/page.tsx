@@ -5,31 +5,101 @@
 
 export const dynamic = "force-dynamic";
 
-import { Calendar, CreditCard, User } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  CheckCircle2,
+  XCircle,
+  ClipboardList,
+  Wallet,
+  TrendingUp,
+  Download,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberDashboard } from "@/features/members/hooks/useMemberDashboard";
 import { usePaymentHistory } from "@/features/payments/hooks/usePaymentHistory";
-import { StandingBanner } from "@/features/members/components/MemberDashboard/StandingBanner";
-import { BalanceSummaryCard } from "@/features/members/components/MemberDashboard/BalanceSummaryCard";
 import { DuesGrid } from "@/features/members/components/MemberDashboard/DuesGrid";
 import { PaymentHistoryTable } from "@/features/payments/components/PaymentHistoryTable";
-import { formatDate } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
+import type { ReactNode } from "react";
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
 
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <Skeleton className="h-16 w-full rounded-xl" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Skeleton className="h-48 rounded-xl" />
-        <Skeleton className="col-span-2 h-48 rounded-xl" />
+      <div>
+        <Skeleton className="h-8 w-40 mb-2" />
+        <Skeleton className="h-4 w-52" />
       </div>
-      <Skeleton className="h-44 rounded-xl" />
-      <Skeleton className="h-48 rounded-xl" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-28 rounded-xl" />
+        ))}
+      </div>
+      <Skeleton className="h-96 rounded-xl" />
+      <Skeleton className="h-64 rounded-xl" />
     </div>
   );
+}
+
+// ─── Stat card ─────────────────────────────────────────────────────────────────
+
+interface StatCardProps {
+  label: string;
+  value: ReactNode;
+  sublabel: string;
+  icon: ReactNode;
+  iconClass: string;
+}
+
+function StatCard({ label, value, sublabel, icon, iconClass }: StatCardProps) {
+  return (
+    <Card>
+      <CardContent className="pt-5 pb-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">{label}</p>
+            <p className="text-2xl font-bold text-foreground leading-tight">{value}</p>
+            <p className="text-xs text-muted-foreground">{sublabel}</p>
+          </div>
+          <div
+            className={cn(
+              "h-11 w-11 shrink-0 rounded-full flex items-center justify-center",
+              iconClass
+            )}
+          >
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Export helper ─────────────────────────────────────────────────────────────
+
+function exportPaymentsCSV(
+  payments: { paymentDate: string; paymentType: string; amountPaid: number; referenceNumber: string | null }[],
+  year: number
+) {
+  const headers = ["Date", "Description", "Amount (PHP)", "Status", "Reference"];
+  const rows = payments.map((p) => {
+    const month = new Date(p.paymentDate).toLocaleString("en-PH", { month: "long" });
+    const desc = p.paymentType === "MEMBERSHIP_FEE" ? "Membership Fee" : `Monthly Dues - ${month}`;
+    return [p.paymentDate, desc, p.amountPaid.toFixed(2), "Paid", p.referenceNumber ?? ""];
+  });
+  const csv = [headers, ...rows]
+    .map((r) => r.map((v) => `"${v}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `payment-history-${year}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -50,83 +120,134 @@ export default function MemberDashboardPage() {
     );
   }
 
+  const currentYear = new Date().getFullYear();
+  const allPayments = historyData?.data ?? [];
+
+  // Derive totals from payment history
+  const totalPaidThisYear = allPayments
+    .filter((p) => new Date(p.paymentDate).getFullYear() === currentYear)
+    .reduce((sum, p) => sum + p.amountPaid, 0);
+
+  const membershipFeeAmountPaid = allPayments
+    .filter((p) => p.paymentType === "MEMBERSHIP_FEE")
+    .reduce((sum, p) => sum + p.amountPaid, 0);
+
+  // Dues completion relative to expected periods (not full 12)
+  const duesCompletion =
+    data.periodsExpected > 0
+      ? Math.round((data.periodsPaid / data.periodsExpected) * 100)
+      : data.periodsPaid > 0
+        ? 100
+        : 0;
+
+  const firstName = data.fullName.split(" ")[0];
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Page header */}
+
+      {/* ── Welcome header ──────────────────────────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">My Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
         <p className="text-sm mt-1 text-muted-foreground">
-          Your membership and payment standing for this period.
+          Welcome back, {firstName}!
         </p>
       </div>
 
-      {/* Standing banner */}
-      <StandingBanner status={data.status} memberName={data.fullName} />
+      {/* ── Summary cards ───────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-      {/* Profile + Balance row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile card */}
-        <Card>
-          <CardContent className="pt-5 flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground text-base font-bold shrink-0">
-                {data.fullName.charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-foreground truncate">{data.fullName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {data.memberType === "FULL_TIME" ? "Full-Time" : "Associate"}
-                </p>
-              </div>
-            </div>
+        {/* Membership Fee */}
+        <StatCard
+          label="Membership Fee"
+          value={
+            <span className={data.membershipFeePaid ? "text-status-paid" : "text-status-outstanding"}>
+              {data.membershipFeePaid ? "Paid" : "Unpaid"}
+            </span>
+          }
+          sublabel={
+            data.memberType === "FULL_TIME"
+              ? data.membershipFeePaid
+                ? formatCurrency(membershipFeeAmountPaid)
+                : "Not yet paid"
+              : "N/A — Associate"
+          }
+          iconClass="bg-emerald-50"
+          icon={
+            data.membershipFeePaid
+              ? <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              : <XCircle className="h-5 w-5 text-red-400" />
+          }
+        />
 
-            <div className="flex flex-col gap-2">
-              {data.college && (
-                <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <User className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                  <span>{data.college}</span>
-                </div>
-              )}
-              <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <CreditCard className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                <span>{data.periodsPaid} of {data.periodsExpected} months paid</span>
-              </div>
-              {data.lastPaymentDate && (
-                <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                  <span>Last payment: {formatDate(data.lastPaymentDate)}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Monthly Dues Paid */}
+        <StatCard
+          label="Monthly Dues Paid"
+          value={`${data.periodsPaid}/${data.periodsExpected}`}
+          sublabel={`${duesCompletion}% Complete`}
+          iconClass="bg-blue-50"
+          icon={<ClipboardList className="h-5 w-5 text-blue-500" />}
+        />
 
-        {/* Balance summary */}
-        <div className="lg:col-span-2">
-          <BalanceSummaryCard
-            memberType={data.memberType}
-            membershipFeePaid={data.membershipFeePaid}
-            periodsExpected={data.periodsExpected}
-            periodsPaid={data.periodsPaid}
-            outstandingBalance={data.outstandingBalance}
-          />
-        </div>
+        {/* Total Paid (Year) */}
+        <StatCard
+          label={`Total Paid (${currentYear})`}
+          value={formatCurrency(totalPaidThisYear)}
+          sublabel="This year"
+          iconClass="bg-violet-50"
+          icon={<Wallet className="h-5 w-5 text-violet-500" />}
+        />
+
+        {/* Outstanding */}
+        <StatCard
+          label="Outstanding"
+          value={
+            <span className={data.outstandingBalance > 0 ? "text-status-outstanding" : "text-status-paid"}>
+              {formatCurrency(data.outstandingBalance)}
+            </span>
+          }
+          sublabel={data.outstandingBalance > 0 ? "Please settle dues" : "All caught up"}
+          iconClass={data.outstandingBalance > 0 ? "bg-red-50" : "bg-emerald-50"}
+          icon={<TrendingUp className={cn("h-5 w-5", data.outstandingBalance > 0 ? "text-red-400" : "text-emerald-500")} />}
+        />
+
       </div>
 
-      {/* Monthly dues grid */}
-      <DuesGrid monthsPaid={data.monthsPaid} yearRef={new Date().getFullYear()} />
+      {/* ── Monthly dues status ─────────────────────────────────────────────── */}
+      <DuesGrid monthsPaid={data.monthsPaid} yearRef={currentYear} />
 
-      {/* Payment history */}
+      {/* ── Recent payments ─────────────────────────────────────────────────── */}
       <Card>
-        <CardContent className="pt-5">
-          <h2 className="text-sm font-semibold text-foreground mb-4">Payment History</h2>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-base font-semibold text-foreground">
+                Recent Payments
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Your latest payment transactions
+              </p>
+            </div>
+            {allPayments.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-1.5"
+                onClick={() => exportPaymentsCSV(allPayments, currentYear)}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
           <PaymentHistoryTable
-            payments={historyData?.data ?? []}
+            payments={allPayments}
             isLoading={historyLoading}
           />
         </CardContent>
       </Card>
+
     </div>
   );
 }
-
