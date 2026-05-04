@@ -44,12 +44,15 @@ function memberTypeLabel(memberType: string): string {
 
 function ProfileSkeleton() {
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <Skeleton className="h-40 rounded-xl" />
-      <Skeleton className="h-52 rounded-xl" />
-      <Skeleton className="h-44 rounded-xl" />
-      <Skeleton className="h-36 rounded-xl" />
-      <Skeleton className="h-28 rounded-xl" />
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-32 rounded-xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Skeleton className="h-44 rounded-xl" />
+        <Skeleton className="h-44 rounded-xl" />
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+      </div>
     </div>
   );
 }
@@ -112,7 +115,7 @@ export default function MemberProfilePage() {
 
   return (
     <>
-      <div className="flex flex-col gap-6 max-w-2xl">
+      <div className="flex flex-col gap-4">
 
         {/* ── Page heading ──────────────────────────────────────────────────── */}
         <div>
@@ -122,24 +125,24 @@ export default function MemberProfilePage() {
 
         {/* ── Profile header card ──────────────────────────────────────────── */}
         <Card>
-          <CardContent className="pt-6 pb-6">
-            <div className="flex items-start gap-5">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center gap-5">
               {/* Avatar */}
-              <div className="h-16 w-16 shrink-0 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">{initials}</span>
+              <div className="h-14 w-14 shrink-0 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="text-lg font-bold text-white">{initials}</span>
               </div>
 
               {/* Name + meta */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold text-foreground truncate">{member.fullName}</h2>
-                  <Badge variant={member.isActive ? "default" : "secondary"} className="shrink-0">
+                  <h2 className="text-base font-semibold text-foreground truncate">{member.fullName}</h2>
+                  <Badge variant={member.isActive ? "default" : "secondary"} className="shrink-0 text-xs">
                     {member.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">{memberTypeLabel(member.memberType)}</p>
                 {member.joinedAt && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Member since {formatDate(member.joinedAt)}
                   </p>
                 )}
@@ -159,74 +162,78 @@ export default function MemberProfilePage() {
           </CardContent>
         </Card>
 
-        {/* ── Personal Information ─────────────────────────────────────────── */}
-        <SectionCard
-          title="Personal Information"
-          icon={<User className="h-4 w-4 text-muted-foreground" />}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoRow label="Full Name"      value={member.fullName} />
-            <InfoRow label="Email Address"  value={member.email} />
-            <InfoRow label="Contact Number" value={undefined} />
-            <InfoRow label="Address"        value={undefined} />
-          </div>
-        </SectionCard>
+        {/* ── Detail sections — 2-column grid ─────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        {/* ── Employment Information ───────────────────────────────────────── */}
-        <SectionCard
-          title="Employment Information"
-          icon={<Briefcase className="h-4 w-4 text-muted-foreground" />}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoRow label="Employee ID" value={member.employeeId} />
-            <InfoRow label="College"     value={member.collegeName} />
-            <InfoRow label="Department"  value={undefined} />
-            <InfoRow label="Notes"       value={member.notes} />
-          </div>
-        </SectionCard>
+          {/* Personal Information */}
+          <SectionCard
+            title="Personal Information"
+            icon={<User className="h-4 w-4 text-muted-foreground" />}
+          >
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <InfoRow label="Full Name"      value={member.fullName} />
+              <InfoRow label="Email Address"  value={member.email} />
+              <InfoRow label="Contact Number" value={undefined} />
+              <InfoRow label="Address"        value={undefined} />
+            </div>
+          </SectionCard>
 
-        {/* ── Membership Information ───────────────────────────────────────── */}
-        <SectionCard
-          title="Membership Information"
-          icon={<ClipboardCheck className="h-4 w-4 text-muted-foreground" />}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-0.5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</p>
-              <Badge
-                variant={member.isActive ? "default" : "secondary"}
-                className="w-fit mt-0.5"
+          {/* Employment Information */}
+          <SectionCard
+            title="Employment Information"
+            icon={<Briefcase className="h-4 w-4 text-muted-foreground" />}
+          >
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <InfoRow label="Employee ID" value={member.employeeId} />
+              <InfoRow label="College"     value={member.collegeName} />
+              <InfoRow label="Department"  value={undefined} />
+              <InfoRow label="Notes"       value={member.notes} />
+            </div>
+          </SectionCard>
+
+          {/* Membership Information */}
+          <SectionCard
+            title="Membership Information"
+            icon={<ClipboardCheck className="h-4 w-4 text-muted-foreground" />}
+          >
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</p>
+                <Badge
+                  variant={member.isActive ? "default" : "secondary"}
+                  className="w-fit mt-0.5 text-xs"
+                >
+                  {member.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <InfoRow label="Member Since"    value={formatDate(member.joinedAt)} />
+              <InfoRow label="Membership Type" value={memberTypeLabel(member.memberType)} />
+            </div>
+          </SectionCard>
+
+          {/* Security Settings */}
+          <SectionCard
+            title="Security Settings"
+            icon={<Shield className="h-4 w-4 text-muted-foreground" />}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-medium text-foreground">Password</p>
+                <p className="text-xs text-muted-foreground">Update your account password</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-1.5"
+                onClick={() => setPasswordOpen(true)}
               >
-                {member.isActive ? "Active" : "Inactive"}
-              </Badge>
+                <KeyRound className="h-3.5 w-3.5" />
+                Change Password
+              </Button>
             </div>
-            <InfoRow label="Member Since"    value={formatDate(member.joinedAt)} />
-            <InfoRow label="Membership Type" value={memberTypeLabel(member.memberType)} />
-          </div>
-        </SectionCard>
+          </SectionCard>
 
-        {/* ── Security Settings ────────────────────────────────────────────── */}
-        <SectionCard
-          title="Security Settings"
-          icon={<Shield className="h-4 w-4 text-muted-foreground" />}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col gap-0.5">
-              <p className="text-sm font-medium text-foreground">Password</p>
-              <p className="text-xs text-muted-foreground">Update your account password</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 gap-1.5"
-              onClick={() => setPasswordOpen(true)}
-            >
-              <KeyRound className="h-3.5 w-3.5" />
-              Change Password
-            </Button>
-          </div>
-        </SectionCard>
-
+        </div>
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
