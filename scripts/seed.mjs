@@ -110,15 +110,11 @@ const recBy = treasurerProfile?.id ?? treasurerUser.id; // recorded_by FK
 console.log("\n── Seeding colleges ────────────────────────────────────────────");
 
 const collegeRows = [
-  { name: "College of Computer Studies",                   code: "CCS" },
   { name: "College of Allied Health Studies",              code: "CAHS" },
   { name: "College of Business and Accountancy",           code: "CBA" },
+  { name: "College of Computer Studies",                   code: "CCS" },
   { name: "College of Education, Arts and Sciences",       code: "CEAS" },
   { name: "College of Hospitality and Tourism Management", code: "CHTM" },
-  { name: "College of Engineering",                        code: "COE" },
-  { name: "College of Criminal Justice Education",         code: "CCJE" },
-  { name: "College of Arts and Communication",             code: "CAC" },
-  { name: "College of Agriculture",                        code: "CA" },
 ];
 
 const { data: colleges, error: collegeErr } = await supabase
@@ -252,17 +248,13 @@ function buildMembersForCollege(collegeCode, count, linkedProfileId = null) {
   return rows;
 }
 
-// ~10 members per college → 9 colleges → 90 total (plus the linked ashley row)
+// ~10 members per college → 5 colleges → 50 total
 const allMemberRows = [
   ...buildMembersForCollege("CCS",  10, memberAuthUser.id), // first row = ashley
   ...buildMembersForCollege("CAHS", 10),
   ...buildMembersForCollege("CBA",  10),
   ...buildMembersForCollege("CEAS", 10),
   ...buildMembersForCollege("CHTM", 10),
-  ...buildMembersForCollege("COE",  10),
-  ...buildMembersForCollege("CCJE", 10),
-  ...buildMembersForCollege("CAC",   9),
-  ...buildMembersForCollege("CA",    9),
 ];
 
 // Override ashley's name/email to match her auth account
@@ -432,7 +424,7 @@ console.log(`
 ║  Treasurer  :  treasurer@gcfast.edu  / Treasurer@123     ║
 ║  Member     :  ashley@gcfast.edu     / Member@1234       ║
 ╠══════════════════════════════════════════════════════════╣
-║  Colleges   : ${String(collegeRows.length).padEnd(3)} (all major departments)              ║
+║  Colleges   : ${String(collegeRows.length).padEnd(3)} (CAHS, CBA, CCS, CEAS, CHTM)           ║
 ║  Periods    : 12 months (${YEAR})                        ║
 ║  Members    : ${String(insertedMembers.length).padEnd(3)} across all colleges              ║
 ╠══════════════════════════════════════════════════════════╣
