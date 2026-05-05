@@ -4,6 +4,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
 import { formatCurrency } from "@/lib/utils/format";
 import type { CollegeDistribution } from "@/lib/models";
 
@@ -42,19 +43,19 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-function renderLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
-  cx: number; cy: number; midAngle: number;
-  innerRadius: number; outerRadius: number; percent: number;
-}) {
-  if (percent < 0.05) return null;
+function renderLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelRenderProps) {
+  // Only label slices that are large enough to avoid overlap (≥ 15%)
+  if ((percent ?? 0) < 0.15) return null;
   const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const inner = (innerRadius as number) ?? 0;
+  const outer = (outerRadius as number) ?? 0;
+  const radius = inner + (outer - inner) * 0.5;
+  const x = (cx as number) + radius * Math.cos(-(midAngle as number) * RADIAN);
+  const y = (cy as number) + radius * Math.sin(-(midAngle as number) * RADIAN);
   return (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-      fontSize={11} fontWeight={600}>
-      {`${(percent * 100).toFixed(1)}%`}
+      fontSize={10} fontWeight={700}>
+      {`${Math.round((percent as number) * 100)}%`}
     </text>
   );
 }
@@ -78,10 +79,11 @@ export function PaymentDistributionChart({ data }: Props) {
               data={data}
               cx="50%"
               cy="50%"
-              outerRadius="90%"
+              innerRadius="38%"
+              outerRadius="88%"
               dataKey="total"
               nameKey="collegeName"
-              paddingAngle={1}
+              paddingAngle={2}
               labelLine={false}
               label={renderLabel}
             >

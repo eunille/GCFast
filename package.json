@@ -10,7 +10,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "node scripts/seed.mjs",
+    "create-treasurer": "node scripts/create-treasurer.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "1.3.3",

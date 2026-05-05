@@ -143,7 +143,7 @@ export function DashboardPaymentTable({ onRecord }: Props) {
                 <TableHead key={m} className="text-center w-10 px-1.5">{m}</TableHead>
               ))}
               <TableHead className="text-right min-w-20">Balance</TableHead>
-              <TableHead className="min-w-28">Status</TableHead>
+              <TableHead className="min-w-36">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -170,16 +170,14 @@ export function DashboardPaymentTable({ onRecord }: Props) {
                     {formatCurrency(row.outstanding_balance)}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <PaymentStatusBadge status={row.status} />
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-xs"
+                      <button
+                        className="text-[11px] font-medium text-accent hover:text-accent/80 hover:underline underline-offset-2 transition-colors"
                         onClick={(e) => { e.stopPropagation(); onRecord(row.member_id); }}
                       >
                         Record
-                      </Button>
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
