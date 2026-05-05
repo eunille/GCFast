@@ -3,12 +3,11 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV !== "production";
 
 // Content-Security-Policy:
-// - 'unsafe-inline' and 'unsafe-eval' are restricted to dev only.
-// - Production build uses a strict script-src that relies on Next.js nonces
-//   (add nonce middleware in /middleware.ts when deploying to production).
+// Next.js App Router injects inline scripts at runtime, so 'unsafe-inline' is required.
+// 'unsafe-eval' is only needed in development (for hot reload).
 const scriptSrc = isDev
   ? "'self' 'unsafe-inline' 'unsafe-eval'"
-  : "'self'";
+  : "'self' 'unsafe-inline'";
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -23,13 +22,13 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co https://*.vercel.app",
     ].join("; "),
   },
 ];
 
-// CORS: prefer ALLOWED_ORIGIN env var. Falls back to VERCEL_URL (auto-set by Vercel)
-// then to "*" in development. In production both are acceptable — Vercel injects VERCEL_URL.
+// CORS: prefer explicit ALLOWED_ORIGIN env var (set in Vercel dashboard).
+// Falls back to VERCEL_URL (auto-injected per-deployment) then wildcard for dev.
 function getAllowedOrigin(): string {
   if (process.env.ALLOWED_ORIGIN) return process.env.ALLOWED_ORIGIN;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
