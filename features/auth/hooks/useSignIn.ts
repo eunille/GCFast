@@ -33,6 +33,16 @@ export function useSignIn() {
     try {
       const user: AuthUser = await authRepository.signIn(email, password);
 
+      if (user.role === "MEMBER" && user.accountStatus === "pending") {
+        router.replace("/pending-approval");
+        return;
+      }
+      if (user.role === "MEMBER" && user.accountStatus === "rejected") {
+        setError("Your account has been rejected. Please contact the treasurer.");
+        await authRepository.signOut();
+        return;
+      }
+
       if (user.role === "TREASURER" || user.role === "ADMIN") {
         router.replace("/treasurer/overview");
       } else {

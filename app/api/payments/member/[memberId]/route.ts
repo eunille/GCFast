@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/utils/api-handler";
 import { withAuth } from "@/lib/middleware/withAuth";
+import { withApproval } from "@/lib/middleware/withApproval";
 import { validate } from "@/lib/utils/validate";
 import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
@@ -27,6 +28,9 @@ export const GET = apiHandler(async (req: Request, ctx: unknown) => {
   // 2. Authenticate
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
+
+  const approvalResult = await withApproval(authResult, req);
+  if (approvalResult !== null) return approvalResult;
 
   const supabase = await createSupabaseServer(req);
 
@@ -64,10 +68,11 @@ export const GET = apiHandler(async (req: Request, ctx: unknown) => {
   const { page, pageSize, sortBy, sortOrder, paymentType, year } = parsed.data;
   const { from, to } = toRange({ page, pageSize });
 
-  // 5. Build query — only this member's payment records
+  // 5. Build query — only this member's payment records, joined with academic_periods
+  //    so callers get periodMonth/periodYear (the month being COVERED, not when paid)
   let query = supabase
     .from("payment_records")
-    .select("*", { count: "exact" })
+    .select("*, academic_periods!academic_period_id(month, year, label)", { count: "exact" })
     .eq("member_id", memberId)
     .range(from, to);
 
@@ -83,6 +88,8 @@ export const GET = apiHandler(async (req: Request, ctx: unknown) => {
   if (error) throw new Error(error.message);
 
   // 6. Map rows (snake_case → camelCase)
+  type PeriodJoin = { month: number; year: number; label: string } | null;
+
   const records = (data ?? []).map((row: Record<string, unknown>) => ({
     id: row.id,
     memberId: row.member_id,
@@ -90,6 +97,9 @@ export const GET = apiHandler(async (req: Request, ctx: unknown) => {
     amountPaid: row.amount_paid,
     paymentDate: row.payment_date,
     academicPeriodId: row.academic_period_id ?? null,
+    periodMonth: (row.academic_periods as PeriodJoin)?.month ?? null,
+    periodYear: (row.academic_periods as PeriodJoin)?.year ?? null,
+    periodLabel: (row.academic_periods as PeriodJoin)?.label ?? null,
     referenceNumber: row.reference_number ?? null,
     notes: row.notes ?? null,
     recordedBy: row.recorded_by,

@@ -9,8 +9,11 @@ export interface PaymentRecord {
   memberId: string;
   paymentType: PaymentType;
   amountPaid: number;
-  paymentDate: string;              // ISO Date YYYY-MM-DD
+  paymentDate: string;              // ISO Date YYYY-MM-DD (date payment was physically made)
   academicPeriodId: string | null;  // null for MEMBERSHIP_FEE
+  periodMonth: number | null;       // 1–12: month of the academic period being paid (not payment date)
+  periodYear: number | null;        // year of the academic period being paid (not payment date)
+  periodLabel: string | null;       // display label e.g. "January 2026"
   referenceNumber: string | null;
   notes: string | null;
   recordedBy: string;               // UUID — treasurer user id

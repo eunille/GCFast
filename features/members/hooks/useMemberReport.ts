@@ -45,18 +45,26 @@ function buildReportData(
   payments: PaymentRecord[],
   membershipFeePaid: boolean
 ): MemberReportData {
-  // Only dues payments for selected year
+  // Only dues payments for the selected year — use periodYear (the year being COVERED),
+  // not paymentDate year (the year the payment was physically recorded).
+  // e.g. January 2026 dues paid on May 5, 2026 → periodYear=2026, paymentDate year=2026 ✓
+  //      but the month is periodMonth=1 (January), not paymentDate month=5 (May).
   const duesForYear = payments.filter(
     (p) =>
       p.paymentType === "MONTHLY_DUES" &&
-      new Date(p.paymentDate).getFullYear() === year
+      (p.periodYear !== null && p.periodYear !== undefined
+        ? p.periodYear === year
+        : new Date(p.paymentDate).getFullYear() === year)
   );
 
-  // Build per-month index keyed by month number
+  // Build per-month index keyed by the academic period month (1-based)
   const byMonth = new Map<number, PaymentRecord>();
   for (const p of duesForYear) {
-    const m = new Date(p.paymentDate).getMonth() + 1; // 1-based
-    // Take the first/earliest payment per month
+    // Use the period month (what month is being paid for), not payment date month
+    const m = p.periodMonth !== null && p.periodMonth !== undefined
+      ? p.periodMonth
+      : new Date(p.paymentDate).getMonth() + 1;
+    // Take the first/earliest payment per period month
     if (!byMonth.has(m)) byMonth.set(m, p);
   }
 
@@ -72,7 +80,7 @@ function buildReportData(
     };
   });
 
-  // Membership fee payment
+  // Membership fee payment — no academic period, use paymentDate year
   const membershipFeePayment = payments.find(
     (p) =>
       p.paymentType === "MEMBERSHIP_FEE" &&
@@ -82,9 +90,9 @@ function buildReportData(
 
   const monthlyDuesTotal = duesForYear.reduce((sum, p) => sum + p.amountPaid, 0);
   const monthsPaidCount  = byMonth.size;
-  const totalPaid        = payments
-    .filter((p) => new Date(p.paymentDate).getFullYear() === year)
-    .reduce((sum, p) => sum + p.amountPaid, 0);
+  // Total paid = dues for this period year + membership fee paid this calendar year
+  const totalPaid = duesForYear.reduce((sum, p) => sum + p.amountPaid, 0)
+    + (membershipFeePayment?.amountPaid ?? 0);
   const avgMonthly = monthsPaidCount > 0 ? monthlyDuesTotal / monthsPaidCount : 0;
 
   return {

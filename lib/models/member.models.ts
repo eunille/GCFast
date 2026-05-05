@@ -1,13 +1,13 @@
 // lib/models/member.models.ts
 // Source of truth: API_MODELS.md — "Member Models"
 
-import type { MemberType } from "./shared.models";
+import type { MemberType, AccountStatus } from "./shared.models";
 
 /** GET /api/members, GET /api/members/:id, POST /api/members, PATCH /api/members/:id */
 export interface Member {
   id: string;
   profileId: string | null;
-  collegeId: string;
+  collegeId: string | null;   // null for self-registered pending members
   collegeName?: string;
   collegeCode?: string;
   employeeId?: string;
@@ -17,6 +17,8 @@ export interface Member {
   joinedAt?: string;       // ISO Date YYYY-MM-DD
   isActive: boolean;
   notes?: string;
+  /** Populated when a linked auth account exists */
+  accountStatus?: AccountStatus;
   createdAt: string;       // ISO 8601
   updatedAt: string;       // ISO 8601
 }
@@ -47,4 +49,6 @@ export interface MemberListQuery {
   collegeId?: string;
   memberType?: MemberType;
   isActive?: boolean;
+  /** Filter by linked account status. "pending" shows only pending-approval members. */
+  accountStatus?: "pending" | "active" | "inactive";
 }

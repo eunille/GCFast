@@ -12,8 +12,8 @@ export interface MonthlyTrendPoint {
 }
 
 export interface CollegeDistribution {
-  collegeId: string;
-  collegeName: string;
+  collegeId: string | null;
+  collegeName: string | null;
   /** Total amount collected from this college */
   total: number;
   /** Number of active members in this college */

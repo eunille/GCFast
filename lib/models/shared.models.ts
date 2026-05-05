@@ -14,6 +14,9 @@ export type PaymentStatus = "COMPLETE" | "HAS_BALANCE";
 export type PaymentType   = "MEMBERSHIP_FEE" | "MONTHLY_DUES";
 export type ReportFormat  = "json" | "excel" | "pdf";
 
+/** Approval status for member auth accounts */
+export type AccountStatus = "pending" | "active" | "rejected";
+
 // ─── Response Envelope ────────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {

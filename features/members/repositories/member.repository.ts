@@ -16,6 +16,8 @@ function buildQuery(filter: MemberListQuery): string {
   if (filter.sortOrder)  params.set("sortOrder",  filter.sortOrder);
   if (filter.isActive !== undefined)
     params.set("isActive", String(filter.isActive));
+  if (filter.accountStatus)
+    params.set("accountStatus", filter.accountStatus);
   return params.toString();
 }
 

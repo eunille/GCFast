@@ -9,6 +9,7 @@ interface ProfileRow {
   role: string;
   full_name: string;
   email: string;
+  account_status: string;
 }
 
 interface MemberRow {
@@ -24,7 +25,7 @@ export const GET = apiHandler(async (req: Request) => {
   const supabase = await createSupabaseServer(req);
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, role, full_name, email")
+    .select("id, role, full_name, email, account_status")
     .eq("id", authResult.id)
     .single<ProfileRow>();
 
@@ -47,5 +48,6 @@ export const GET = apiHandler(async (req: Request) => {
     fullName: profile.full_name,
     role: profile.role,
     memberId: member?.id ?? null,
+    accountStatus: profile.account_status ?? "active",
   });
 });

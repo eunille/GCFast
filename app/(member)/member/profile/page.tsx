@@ -96,7 +96,7 @@ function SectionCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MemberProfilePage() {
-  const { data: member, isLoading, isError } = useMemberProfile();
+  const { data: member, isLoading, isError, error } = useMemberProfile();
 
   const [editOpen, setEditOpen]       = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -104,10 +104,23 @@ export default function MemberProfilePage() {
   if (isLoading) return <ProfileSkeleton />;
 
   if (isError || !member) {
+    const isNotLinked =
+      error instanceof Error &&
+      error.message.toLowerCase().includes("no member record");
+
     return (
-      <p className="text-sm text-destructive py-8 text-center">
-        Failed to load your profile. Please refresh.
-      </p>
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-sm font-medium text-foreground">
+          {isNotLinked
+            ? "Your account is not yet linked to a member record."
+            : "Failed to load your profile."}
+        </p>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          {isNotLinked
+            ? "Please contact your treasurer to have your account set up."
+            : "Please refresh the page. If the problem persists, contact your treasurer."}
+        </p>
+      </div>
     );
   }
 

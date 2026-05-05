@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { MemberProfileCard } from "@/features/members/components/MemberDashboard/MemberProfileCard";
@@ -23,6 +24,7 @@ import { PaymentHistoryTable } from "@/features/payments/components/PaymentHisto
 import { useMember } from "@/features/members/hooks/useMember";
 import { useDeactivateMember } from "@/features/members/hooks/useDeactivateMember";
 import { usePaymentHistory } from "@/features/payments/hooks/usePaymentHistory";
+import { useApproveAccount } from "@/features/members/hooks/useApproveAccount";
 import { toast } from "sonner";
 
 interface Props {
@@ -35,9 +37,17 @@ export default function MemberDetailPage({ params }: Props) {
   const { data: member, isLoading, isError } = useMember(id);
   const { mutate: deactivate, isPending: isDeactivating } = useDeactivateMember(id);
   const { data: paymentHistoryResult, isLoading: isLoadingPayments } = usePaymentHistory(id);
+  const { approve, isPending: isApproving } = useApproveAccount((result) => {
+    toast.success(
+      result.action === "approve" ? "Account activated" : "Account rejected",
+      { description: result.email ?? undefined }
+    );
+  });
 
   const [showEdit, setShowEdit]             = useState(false);
   const [showDeactivate, setShowDeactivate] = useState(false);
+
+  const isPending = member?.accountStatus === "pending";
 
   if (isLoading) {
     return (
@@ -88,30 +98,54 @@ export default function MemberDetailPage({ params }: Props) {
 
       {/* Action row */}
       <div className="flex flex-wrap gap-2">
-        <Button
-          onClick={() => setShowEdit(true)}
-          className="bg-accent text-accent-foreground hover:bg-accent/90"
-        >
-          Edit Member
-        </Button>
+        {isPending ? (
+          /* ── Pending account: only approve/reject ──────────────────────── */
+          <>
+            <Button
+              disabled={isApproving}
+              onClick={() => member.profileId && void approve(member.profileId, "approve")}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isApproving ? "Activating…" : "Activate Account"}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={isApproving}
+              onClick={() => member.profileId && void approve(member.profileId, "reject")}
+              className="border-destructive text-destructive hover:bg-destructive/5"
+            >
+              Reject
+            </Button>
+          </>
+        ) : (
+          /* ── Active / Inactive account: full actions ───────────────────── */
+          <>
+            <Button
+              onClick={() => setShowEdit(true)}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Edit Member
+            </Button>
 
-        {member.isActive && (
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/treasurer/payments/record?memberId=${id}`)}
-          >
-            Record Payment
-          </Button>
-        )}
+            {member.isActive && (
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/treasurer/payments/record?memberId=${id}`)}
+              >
+                Record Payment
+              </Button>
+            )}
 
-        {member.isActive && (
-          <Button
-            variant="outline"
-            onClick={() => setShowDeactivate(true)}
-            className="border-destructive text-destructive hover:bg-destructive/5"
-          >
-            Deactivate
-          </Button>
+            {member.isActive && (
+              <Button
+                variant="outline"
+                onClick={() => setShowDeactivate(true)}
+                className="border-destructive text-destructive hover:bg-destructive/5"
+              >
+                Deactivate
+              </Button>
+            )}
+          </>
         )}
       </div>
 
@@ -138,13 +172,11 @@ export default function MemberDetailPage({ params }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Deactivate Member?</DialogTitle>
+            <DialogDescription>
+              This will deactivate{" "}
+              <span className="font-medium">{member.fullName}</span> and prevent new payments from being recorded.
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This will deactivate{" "}
-            <span className="font-medium text-foreground">{member.fullName}</span>.
-            Payment history is preserved but no new payments can be recorded.
-            This action cannot be undone from the UI.
-          </p>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowDeactivate(false)} disabled={isDeactivating}>
               Cancel

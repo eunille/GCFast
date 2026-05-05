@@ -63,7 +63,8 @@ export const POST = apiHandler(async (req: Request) => {
 
   // Auto-link member record if one already exists with this email.
   // This handles the case where the Treasurer created a member record before
-  // the member registered an auth account.
+  // the member registered an auth account. When pre-linked, the account is
+  // auto-approved (treasurer already vetted them).
   if (role === "member") {
     const { data: existingMember } = await supabaseAdmin
       .from("members")
@@ -73,10 +74,27 @@ export const POST = apiHandler(async (req: Request) => {
       .maybeSingle();
 
     if (existingMember?.id) {
+      // Treasurer pre-created this member — auto-approve and link.
       await supabaseAdmin
         .from("members")
         .update({ profile_id: data.user.id })
         .eq("id", existingMember.id);
+      // Profile stays 'active' (the default) — no update needed.
+    } else {
+      // Self-registered with no pre-existing record — mark profile as pending
+      // and create a partial members row so the treasurer can see and approve them.
+      await supabaseAdmin
+        .from("profiles")
+        .update({ account_status: "pending" })
+        .eq("id", data.user.id);
+
+      await supabaseAdmin.from("members").insert({
+        profile_id: data.user.id,
+        full_name:  fullName,
+        email,
+        college_id: null,   // treasurer fills this in when approving
+        is_active:  true,
+      });
     }
   }
 

@@ -8,11 +8,10 @@ export const memberDashboardRepository = {
   async get(): Promise<MemberDashboard> {
     const res = await authFetch("/api/dashboard/member");
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch member dashboard");
-    }
-
     const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json?.error?.message ?? "Failed to fetch member dashboard");
+    }
     return json.data as MemberDashboard;
   },
 };

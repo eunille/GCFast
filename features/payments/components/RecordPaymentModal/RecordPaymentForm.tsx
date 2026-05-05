@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,8 +30,27 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
   const { data: rates } = useCurrentRates();
 
   const [paymentType, setPaymentType] = useState<"MEMBERSHIP_FEE" | "MONTHLY_DUES">("MONTHLY_DUES");
-  const [amountPaid, setAmountPaid] = useState("");
+  const [amountOverride, setAmountOverride] = useState<string | null>(null);
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
+
+  // Derive the suggested amount from rates — no setState in an effect.
+  const suggestedAmount = useMemo(() => {
+    if (!rates || !member) return "";
+    if (paymentType === "MEMBERSHIP_FEE") return String(rates.MEMBERSHIP_FEE_FULL_TIME?.amount ?? "");
+    if (member.memberType === "FULL_TIME") return String(rates.MONTHLY_DUES_FULL_TIME?.amount ?? "");
+    return String(rates.MONTHLY_DUES_ASSOCIATE?.amount ?? "");
+  }, [paymentType, rates, member]);
+
+  // The displayed amount is whatever the user typed, falling back to the suggestion.
+  // Reset override when paymentType or member changes so the suggestion takes effect again.
+  const prevTypeRef = useRef(paymentType);
+  const prevMemberRef = useRef(memberId);
+  if (prevTypeRef.current !== paymentType || prevMemberRef.current !== memberId) {
+    prevTypeRef.current = paymentType;
+    prevMemberRef.current = memberId;
+    if (amountOverride !== null) setAmountOverride(null);
+  }
+  const amountPaid = amountOverride ?? suggestedAmount;
   const [academicPeriodId, setAcademicPeriodId] = useState("");
 
   // Clear academicPeriodId when switching away from MONTHLY_DUES
@@ -42,20 +61,6 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Pre-fill amount when paymentType or member changes
-  useEffect(() => {
-    if (!rates || !member) return;
-    let rate: number | undefined;
-    if (paymentType === "MEMBERSHIP_FEE") {
-      rate = rates.MEMBERSHIP_FEE_FULL_TIME?.amount;
-    } else if (member.memberType === "FULL_TIME") {
-      rate = rates.MONTHLY_DUES_FULL_TIME?.amount;
-    } else {
-      rate = rates.MONTHLY_DUES_ASSOCIATE?.amount;
-    }
-    if (rate !== undefined) setAmountPaid(String(rate));
-  }, [paymentType, rates, member]);
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -125,7 +130,7 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
           min="0.01"
           step="0.01"
           value={amountPaid}
-          onChange={(e) => setAmountPaid(e.target.value)}
+          onChange={(e) => setAmountOverride(e.target.value)}
           placeholder="0.00"
         />
         {errors.amountPaid && (

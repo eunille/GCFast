@@ -10,7 +10,15 @@
  * - Never pass raw user input directly to `.order()` or `.eq()`
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+/**
+ * Minimal shape of a Supabase query builder needed by these utilities.
+ * Using an interface instead of `any` keeps things type-safe without
+ * importing the full SupabaseClient generic chain.
+ */
+interface ChainableQuery {
+  order(column: string, options?: { ascending?: boolean }): ChainableQuery;
+  or(filters: string): ChainableQuery;
+}
 
 /**
  * Apply sorting to a Supabase query with whitelisted fields
@@ -24,17 +32,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * @param allowedFields - Whitelisted column names (SQL injection prevention)
  * @returns Modified query with sorting applied (if valid)
  */
-export function applySorting<T>(
-  query: any,
+export function applySorting<Q extends ChainableQuery>(
+  query: Q,
   sortBy: string | undefined,
   sortOrder: "asc" | "desc",
   allowedFields: readonly string[]
-): any {
+): Q {
   if (!sortBy || !allowedFields.includes(sortBy)) {
     return query;
   }
   
-  return query.order(sortBy, { ascending: sortOrder === "asc" });
+  return query.order(sortBy, { ascending: sortOrder === "asc" }) as Q;
 }
 
 /**
@@ -50,11 +58,11 @@ export function applySorting<T>(
  * @param columns - Column names to search across
  * @returns Modified query with search filter applied (if search provided)
  */
-export function applySearch<T>(
-  query: any,
+export function applySearch<Q extends ChainableQuery>(
+  query: Q,
   search: string | undefined,
   columns: readonly string[]
-): any {
+): Q {
   if (!search || !search.trim() || columns.length === 0) {
     return query;
   }
@@ -66,5 +74,5 @@ export function applySearch<T>(
     .map((col) => `${col}.ilike.${searchPattern}`)
     .join(",");
 
-  return query.or(orConditions);
+  return query.or(orConditions) as Q;
 }

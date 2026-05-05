@@ -101,7 +101,7 @@ function exportPaymentsCSV(
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MemberDashboardPage() {
-  const { data, isLoading, isError } = useMemberDashboard();
+  const { data, isLoading, isError, error } = useMemberDashboard();
   const { data: historyData, isLoading: historyLoading } = usePaymentHistory(
     data?.memberId ?? null
   );
@@ -109,10 +109,23 @@ export default function MemberDashboardPage() {
   if (isLoading) return <DashboardSkeleton />;
 
   if (isError || !data) {
+    const isNotLinked =
+      error instanceof Error &&
+      error.message.toLowerCase().includes("no member record");
+
     return (
-      <p className="text-sm text-destructive py-8 text-center">
-        Failed to load your dashboard. Please refresh.
-      </p>
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-sm font-medium text-foreground">
+          {isNotLinked
+            ? "Your account is not yet linked to a member record."
+            : "Failed to load your dashboard."}
+        </p>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          {isNotLinked
+            ? "Please contact your treasurer to have your account set up."
+            : "Please refresh the page. If the problem persists, contact your treasurer."}
+        </p>
+      </div>
     );
   }
 

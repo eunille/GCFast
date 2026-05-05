@@ -14,7 +14,8 @@ interface Props {
   data: CollegeDistribution[];
 }
 
-function shortenName(name: string): string {
+function shortenName(name: string | null | undefined): string {
+  if (!name) return "No College";
   return name
     .replace("College of ", "College of ")
     .replace("Administration", "Admin")
@@ -35,7 +36,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   const d = payload[0].payload;
   return (
     <div className="rounded-lg border border-border bg-white p-3 shadow-lg text-xs">
-      <p className="font-semibold text-foreground mb-1">{d.collegeName}</p>
+      <p className="font-semibold text-foreground mb-1">{d.collegeName ?? "No College"}</p>
       <p className="text-muted-foreground">Collected: <span className="text-foreground font-medium">{formatCurrency(d.total)}</span></p>
       <p className="text-muted-foreground">Members: <span className="text-foreground font-medium">{d.memberCount}</span></p>
       <p className="text-muted-foreground">Share: <span className="text-foreground font-medium">{d.percent}%</span></p>

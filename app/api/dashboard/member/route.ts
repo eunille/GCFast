@@ -1,18 +1,25 @@
 import { apiHandler } from "@/lib/utils/api-handler";
 import { withAuth } from "@/lib/middleware/withAuth";
+import { withApproval } from "@/lib/middleware/withApproval";
 import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const GET = apiHandler(async (req: Request) => {
-  // 1. Authenticate (any role)
+  // 1. Authenticate (any role) and verify approval status.
+  //    Both checks read live from the DB — no stale JWT data used for access control.
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const supabase = await createSupabaseServer(req);
+  const approvalResult = await withApproval(authResult, req);
+  if (approvalResult !== null) return approvalResult;
 
-  // 2. Resolve member_id — first try profile_id (normal linked account),
-  //    then fall back to email match (account created before invite flow).
+  // Use admin client for all subsequent reads.
+  // Auth + approval already verified above; admin bypasses RLS so self-registered
+  // members (college_id = null, no pre-linked record) are still found correctly.
+  const supabase = getSupabaseAdmin();
+
+  // 2. Resolve member_id — profile_id fast path, then email fallback.
   let memberId: string | null = null;
 
   const { data: byProfile } = await supabase
@@ -25,7 +32,7 @@ export const GET = apiHandler(async (req: Request) => {
   if (byProfile?.id) {
     memberId = byProfile.id;
   } else if (authResult.email) {
-    // Fallback: find by email and auto-link profile_id so future lookups are fast
+    // Fallback: account existed before invite flow — find by email and auto-link.
     const { data: byEmail } = await supabase
       .from("members")
       .select("id")
@@ -35,7 +42,7 @@ export const GET = apiHandler(async (req: Request) => {
 
     if (byEmail?.id) {
       memberId = byEmail.id;
-      // Auto-link so the profile_id lookup succeeds next time
+      // Auto-link so the profile_id lookup succeeds next time.
       await supabase
         .from("members")
         .update({ profile_id: authResult.id })
@@ -51,20 +58,22 @@ export const GET = apiHandler(async (req: Request) => {
     );
   }
 
-  // 3. Query member_payment_summary view for own record only
-  const { data, error } = await supabase
+  // 3. Query member_payment_summary view for own record only.
+  //    Uses maybeSingle() — new members with no payments yield no view row; handled below.
+  const { data } = await supabase
     .from("member_payment_summary")
     .select("*")
     .eq("member_id", memberId)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    // New member with no payments yet — return zeroed standing
+  if (!data) {
+    // New member with no payments yet (or college_id still null before migration runs).
+    // Return a zeroed standing so the dashboard renders without error.
     const { data: member } = await supabase
       .from("members")
-      .select("id, full_name, member_type, colleges(name)")
+      .select("id, full_name, member_type, college_id, colleges(name)")
       .eq("id", memberId)
-      .single();
+      .maybeSingle();
 
     if (!member) {
       return errorResponse(ErrorCodes.NOT_FOUND, "Member record not found", 404);
@@ -74,6 +83,7 @@ export const GET = apiHandler(async (req: Request) => {
       id: string;
       full_name: string;
       member_type: string;
+      college_id: string | null;
       colleges: { name: string }[] | { name: string } | null;
     };
     const row = member as unknown as MemberRow;
@@ -94,7 +104,7 @@ export const GET = apiHandler(async (req: Request) => {
     });
   }
 
-  // 4. Map summary view row (snake_case → camelCase)
+  // 4. Map summary view row (snake_case → camelCase).
   const row = data as Record<string, unknown>;
   return successResponse({
     memberId: row.member_id,

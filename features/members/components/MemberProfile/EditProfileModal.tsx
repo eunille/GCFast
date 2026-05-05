@@ -14,7 +14,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useUpdateMemberProfile } from "../../hooks/useMemberProfile";
+import { useColleges } from "@/lib/hooks/useColleges";
 import { toast } from "sonner";
 import type { Member } from "@/lib/models";
 import type { SelfUpdateMemberInput } from "../../types/member.schemas";
@@ -27,11 +35,13 @@ interface Props {
 
 export function EditProfileModal({ member, open, onClose }: Props) {
   const mutation = useUpdateMemberProfile();
+  const { data: colleges = [] } = useColleges();
 
   const [form, setForm] = useState<SelfUpdateMemberInput>({
     fullName:   member.fullName,
     employeeId: member.employeeId ?? "",
     notes:      member.notes ?? "",
+    collegeId:  member.collegeId ?? undefined,
   });
 
   const set = (field: keyof SelfUpdateMemberInput, value: string) =>
@@ -41,9 +51,10 @@ export function EditProfileModal({ member, open, onClose }: Props) {
     e.preventDefault();
 
     const payload: SelfUpdateMemberInput = {};
-    if (form.fullName   !== member.fullName)     payload.fullName   = form.fullName;
-    if (form.employeeId !== (member.employeeId ?? "")) payload.employeeId = form.employeeId || undefined;
-    if (form.notes      !== (member.notes ?? ""))     payload.notes      = form.notes || undefined;
+    if (form.fullName   !== member.fullName)              payload.fullName   = form.fullName;
+    if (form.employeeId !== (member.employeeId ?? ""))    payload.employeeId = form.employeeId || undefined;
+    if (form.notes      !== (member.notes ?? ""))         payload.notes      = form.notes || undefined;
+    if (form.collegeId  !== (member.collegeId ?? undefined)) payload.collegeId = form.collegeId || undefined;
 
     if (Object.keys(payload).length === 0) {
       onClose();
@@ -92,6 +103,25 @@ export function EditProfileModal({ member, open, onClose }: Props) {
               placeholder="e.g. EMP-001"
               maxLength={50}
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>College</Label>
+            <Select
+              value={form.collegeId ?? ""}
+              onValueChange={(v) => setForm((f) => ({ ...f, collegeId: v || undefined }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select college" />
+              </SelectTrigger>
+              <SelectContent>
+                {colleges.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.code} — {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-1.5">
