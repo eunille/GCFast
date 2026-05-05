@@ -3,6 +3,8 @@
 
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { LayoutDashboard, User, FileText } from "lucide-react";
 import { useRequireRole } from "@/features/auth/hooks/useRequireRole";
 import { AppShell } from "@/components/layout/AppShell";
@@ -15,9 +17,20 @@ const MEMBER_NAV: NavItem[] = [
 ];
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useRequireRole("MEMBER");
+  const { user, isLoading } = useRequireRole("MEMBER");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading || !user) return;
+    if (user.accountStatus === "pending") {
+      router.replace("/pending-approval");
+    } else if (user.accountStatus === "rejected") {
+      router.replace("/login");
+    }
+  }, [user, isLoading, router]);
 
   if (isLoading) return null;
+  if (user?.accountStatus === "pending" || user?.accountStatus === "rejected") return null;
 
   return <AppShell navItems={MEMBER_NAV}>{children}</AppShell>;
 }

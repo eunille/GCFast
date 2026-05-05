@@ -92,7 +92,7 @@ export const GET = apiHandler(async (req: Request) => {
   let membersWithBalance = 0;
   let membersComplete = 0;
   let totalOutstanding = 0;
-  const collegeMap = new Map<string, { collegeName: string; total: number; memberCount: number }>();
+  const collegeMap = new Map<string, { collegeName: string | null; collegeId: string | null; total: number; memberCount: number }>();
 
   for (const row of rows) {
     const collected = (row.membership_fee_amount_paid ?? 0) + (row.total_dues_paid ?? 0);
@@ -102,15 +102,16 @@ export const GET = apiHandler(async (req: Request) => {
     if (row.status === "HAS_BALANCE") membersWithBalance++;
     else if (row.status === "COMPLETE") membersComplete++;
 
-    const existing = collegeMap.get(row.college_id);
+    const mapKey = row.college_id ?? "__no_college__";
+    const existing = collegeMap.get(mapKey);
     if (existing) { existing.total += collected; existing.memberCount++; }
-    else collegeMap.set(row.college_id, { collegeName: row.college_name, total: collected, memberCount: 1 });
+    else collegeMap.set(mapKey, { collegeId: row.college_id ?? null, collegeName: row.college_name ?? null, total: collected, memberCount: 1 });
   }
 
   // ── 5. College distribution with percentages ────────────────────────────────
-  const collectionByCollege = Array.from(collegeMap.entries())
-    .map(([collegeId, d]) => ({
-      collegeId, collegeName: d.collegeName,
+  const collectionByCollege = Array.from(collegeMap.values())
+    .map((d) => ({
+      collegeId: d.collegeId, collegeName: d.collegeName,
       total: Math.round(d.total * 100) / 100,
       memberCount: d.memberCount,
       percent: totalCollected > 0 ? Math.round((d.total / totalCollected) * 100) : 0,

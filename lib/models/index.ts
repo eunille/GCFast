@@ -2,7 +2,7 @@
 // Single import point for all API-canonical models.
 // All components, hooks, and repositories must import from here — not from feature type files.
 
-export type { ApiUserRole, UserRole, MemberType, PaymentStatus, PaymentType, ReportFormat, ApiSuccess, ApiError, ApiResponse, PaginationMeta } from "./shared.models";
+export type { ApiUserRole, UserRole, MemberType, PaymentStatus, PaymentType, ReportFormat, AccountStatus, ApiSuccess, ApiError, ApiResponse, PaginationMeta } from "./shared.models";
 export type { AuthMe, AuthUser, InviteInput } from "./auth.models";
 export type { College } from "./college.models";
 export type { AcademicPeriod } from "./academic-period.models";

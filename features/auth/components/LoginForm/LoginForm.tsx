@@ -45,15 +45,7 @@ export function LoginForm() {
           <CardTitle className="text-2xl font-bold tracking-tight">
             Welcome to GCFAs-App
           </CardTitle>
-          <CardDescription>
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-foreground font-medium underline underline-offset-4 hover:text-muted-foreground transition-colors"
-            >
-              Sign up
-            </Link>
-          </CardDescription>
+         
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
@@ -124,7 +116,7 @@ export function LoginForm() {
             <span className="text-xs text-muted-foreground">Or</span>
             <div className="flex-1 h-px bg-border" />
           </div>
-
+          
           <Button asChild variant="outline" className="w-full font-medium">
             <Link href="/register">Register as Member</Link>
           </Button>

@@ -15,9 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useColleges } from "@/lib/hooks/useColleges";
-import { updateMemberSchema } from "../../types/member.schemas";
 import type { Member, UpdateMemberInput } from "@/lib/models";
-import { ZodError } from "zod";
 
 interface Props {
   member: Member;
@@ -34,11 +32,11 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
   const [form, setForm] = useState<UpdateMemberInput>({
     fullName:   member.fullName,
     email:      member.email,
-    collegeId:  member.collegeId,
+    collegeId:  member.collegeId ?? undefined,
     memberType: member.memberType,
-    employeeId: member.employeeId,
-    joinedAt:   member.joinedAt,
-    notes:      member.notes,
+    employeeId: member.employeeId ?? undefined,
+    joinedAt:   member.joinedAt ?? undefined,
+    notes:      member.notes ?? undefined,
   });
   const [errors, setErrors] = useState<FieldErrors>({});
 
@@ -47,20 +45,22 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const validated = updateMemberSchema.parse(form);
-      setErrors({});
-      onSubmit(validated);
-    } catch (err) {
-      if (err instanceof ZodError) {
-        const fe: FieldErrors = {};
-        for (const issue of err.issues) {
-          const key = issue.path[0] as keyof UpdateMemberInput;
-          if (!fe[key]) fe[key] = issue.message;
-        }
-        setErrors(fe);
-      }
+
+    const nextErrors: FieldErrors = {};
+    if (!form.fullName || form.fullName.trim().length < 2)
+      nextErrors.fullName = "Full name must be at least 2 characters";
+    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      nextErrors.email = "Enter a valid email address";
+    if (!form.memberType)
+      nextErrors.memberType = "Member type is required";
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
     }
+
+    setErrors({});
+    onSubmit(form);
   };
 
   return (
@@ -87,7 +87,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label>College *</Label>
+        <Label>College</Label>
         <Select
           value={form.collegeId ?? ""}
           onValueChange={(v) => set("collegeId", v)}
@@ -118,6 +118,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
             <SelectItem value="ASSOCIATE">Associate</SelectItem>
           </SelectContent>
         </Select>
+        {errors.memberType && <p className="text-xs text-destructive">{errors.memberType}</p>}
       </div>
 
       <div className="flex flex-col gap-1">

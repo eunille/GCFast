@@ -52,9 +52,13 @@ export function useRegister(role: RegisterRole) {
     try {
       const user = await authRepository.signUp(email, password, fullName, role);
 
-      // Admin-created accounts are always confirmed — redirect to login to sign in.
-      void user;
-      router.replace("/login");
+      // If the account is pending approval, send to the pending page.
+      if (role === "member" && user.accountStatus === "pending") {
+        router.replace("/pending-approval");
+      } else {
+        // Pre-linked accounts (treasurer invited) or treasurer registrations go to login.
+        router.replace("/login");
+      }
       return { requiresEmailConfirmation: false };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Registration failed";

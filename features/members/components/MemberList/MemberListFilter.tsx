@@ -88,16 +88,29 @@ export function MemberListFilter({ filter, onChange }: Props) {
       </Select>
 
       <Select
-        value={filter.isActive === false ? "inactive" : "active"}
-        onValueChange={(v) =>
-          onChange({ ...filter, isActive: v !== "inactive", page: 1 })
+        value={
+          filter.accountStatus === "pending"
+            ? "pending"
+            : filter.isActive === false
+            ? "inactive"
+            : "active"
         }
+        onValueChange={(v) => {
+          if (v === "pending") {
+            onChange({ ...filter, accountStatus: "pending", isActive: undefined, page: 1 });
+          } else if (v === "inactive") {
+            onChange({ ...filter, accountStatus: undefined, isActive: false, page: 1 });
+          } else {
+            onChange({ ...filter, accountStatus: undefined, isActive: true, page: 1 });
+          }
+        }}
       >
         <SelectTrigger className="w-36">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
           <SelectItem value="inactive">Inactive</SelectItem>
         </SelectContent>
       </Select>

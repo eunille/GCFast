@@ -31,7 +31,11 @@ function formatDate(iso: string) {
 
 function getDescription(p: PaymentRecord): string {
   if (p.paymentType === "MEMBERSHIP_FEE") return "Membership Fee";
-  const month = new Date(p.paymentDate).toLocaleString("en-PH", { month: "long" });
+  // Use the academic period month (what month is being PAID FOR), not the payment date month.
+  // e.g. paying January dues on May 5 → "Monthly Dues - January", not "Monthly Dues - May"
+  const month = p.periodMonth !== null && p.periodMonth !== undefined
+    ? new Date(2000, p.periodMonth - 1, 1).toLocaleString("en-PH", { month: "long" })
+    : new Date(p.paymentDate).toLocaleString("en-PH", { month: "long" });
   return `Monthly Dues - ${month}`;
 }
 

@@ -30,7 +30,7 @@ export function MemberProfileCard({ member }: Props) {
             <h2 className="text-lg font-semibold text-foreground">{member.fullName}</h2>
             <p className="text-sm text-muted-foreground">{member.email}</p>
           </div>
-          <StandingBadge isActive={member.isActive} />
+          <StandingBadge isActive={member.isActive} accountStatus={member.accountStatus} />
         </div>
 
         <Separator className="mb-3" />

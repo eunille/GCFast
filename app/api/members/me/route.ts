@@ -4,6 +4,7 @@
 
 import { apiHandler } from "@/lib/utils/api-handler";
 import { withAuth } from "@/lib/middleware/withAuth";
+import { withApproval } from "@/lib/middleware/withApproval";
 import { validate } from "@/lib/utils/validate";
 import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { ErrorCodes } from "@/lib/types/error-codes";
@@ -20,16 +21,45 @@ export const GET = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
 
+  const approvalResult = await withApproval(authResult, req);
+  if (approvalResult !== null) return approvalResult;
+
   const supabase = await createSupabaseServer(req);
 
-  const { data, error } = await supabase
+  // Strategy 1: look up by profile_id (fast path — already linked)
+  let { data, error } = await supabase
     .from("members")
     .select(MEMBER_SELECT)
     .eq("profile_id", authResult.id)
-    .single();
+    .maybeSingle();
+
+  // Strategy 2: email fallback (account registered before treasurer linked it)
+  if (!data && authResult.email) {
+    const { data: byEmail } = await supabase
+      .from("members")
+      .select(MEMBER_SELECT)
+      .eq("email", authResult.email)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (byEmail) {
+      data = byEmail;
+      error = null;
+      // Auto-link so future lookups use the fast path
+      const adminClient = getSupabaseAdmin();
+      await adminClient
+        .from("members")
+        .update({ profile_id: authResult.id })
+        .eq("id", (byEmail as Record<string, unknown>).id as string);
+    }
+  }
 
   if (error || !data) {
-    return errorResponse(ErrorCodes.NOT_FOUND, "Member record not found", 404);
+    return errorResponse(
+      ErrorCodes.NOT_FOUND,
+      "No member record linked to this account",
+      404
+    );
   }
 
   return successResponse(mapApiMemberFromDb(data as Record<string, unknown>));
@@ -40,6 +70,9 @@ export const GET = apiHandler(async (req: Request) => {
 export const PATCH = apiHandler(async (req: Request) => {
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
+
+  const approvalResult = await withApproval(authResult, req);
+  if (approvalResult !== null) return approvalResult;
 
   let body: unknown;
   try {
@@ -68,6 +101,7 @@ export const PATCH = apiHandler(async (req: Request) => {
   if (parsed.data.fullName   !== undefined) updatePayload.full_name   = parsed.data.fullName;
   if (parsed.data.employeeId !== undefined) updatePayload.employee_id = parsed.data.employeeId;
   if (parsed.data.notes      !== undefined) updatePayload.notes       = parsed.data.notes;
+  if (parsed.data.collegeId  !== undefined) updatePayload.college_id  = parsed.data.collegeId;
 
   if (Object.keys(updatePayload).length === 0) {
     return errorResponse(ErrorCodes.VALIDATION_ERROR, "No fields to update", 400);

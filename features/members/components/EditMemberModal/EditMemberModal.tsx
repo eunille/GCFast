@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { EditMemberForm } from "./EditMemberForm";
 import { useUpdateMember } from "../../hooks/useUpdateMember";
@@ -28,6 +29,9 @@ export function EditMemberModal({ member, open, onClose }: Props) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Member</DialogTitle>
+          <DialogDescription>
+            Update the member&apos;s information. Fields marked * are required.
+          </DialogDescription>
         </DialogHeader>
         <EditMemberForm
           member={member}

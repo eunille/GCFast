@@ -130,32 +130,38 @@ export function getMemberColumns(
     {
       id: "memberStatus",
       header: "Status",
-      cell: ({ row }) => <StandingBadge isActive={row.original.isActive} />,
+      cell: ({ row }) => <StandingBadge isActive={row.original.isActive} accountStatus={row.original.accountStatus} />,
     },
 
     // ── Actions (3-dot menu) ───────────────────────────────────────────────────
     {
       id: "actions",
-      cell: ({ row }) => (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(row.original.id)}>
-                Quick View
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onNavigate(row.original.id)}>
-                View Full Profile
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const member = row.original;
+        const isPending = member.accountStatus === "pending";
+        return (
+          <div className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {!isPending && (
+                  <DropdownMenuItem onClick={() => onView(member.id)}>
+                    Quick View
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onNavigate(member.id)}>
+                  {isPending ? "Review & Approve" : "View Full Profile"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 }

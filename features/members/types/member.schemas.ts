@@ -21,8 +21,14 @@ export const createMemberSchema = z.object({
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 
 // ─── Update (all optional — PATCH semantics) ─────────────────────────────────
-
-export const updateMemberSchema = createMemberSchema.partial();
+// Override collegeId to also accept null (pending members have no college yet).
+// null is converted to undefined so the API treats it as "not changing".
+export const updateMemberSchema = createMemberSchema.partial().extend({
+  collegeId:  z.string().uuid("Invalid college").nullish(),
+  employeeId: z.string().max(50).trim().nullish(),
+  notes:      z.string().max(500).trim().nullish(),
+  joinedAt:   z.string().date("Invalid date format").nullish(),
+});
 
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 
@@ -35,8 +41,9 @@ export const apiUpdateMemberSchema = updateMemberSchema;
 
 export const selfUpdateMemberSchema = z.object({
   fullName:   z.string().min(2, "Full name must be at least 2 characters").max(100).trim().optional(),
-  employeeId: z.string().max(50).trim().optional(),
-  notes:      z.string().max(500).trim().optional(),
+  employeeId: z.string().max(50).trim().nullish(),
+  notes:      z.string().max(500).trim().nullish(),
+  collegeId:  z.string().uuid("Invalid college").nullish(),
 });
 
 export type SelfUpdateMemberInput = z.infer<typeof selfUpdateMemberSchema>;
@@ -45,12 +52,13 @@ export type SelfUpdateMemberInput = z.infer<typeof selfUpdateMemberSchema>;
 
 export const apiMemberFilterSchema = z
   .object({
-    collegeId:  z.string().uuid().optional(),
-    memberType: z.enum(["FULL_TIME", "ASSOCIATE"]).optional(),
-    isActive:   z.coerce.boolean().optional(),
-    search:     z.string().max(100).trim().optional(),
-    sortBy:     z.enum(["full_name", "joined_at", "college_name"]).optional(),
-    sortOrder:  z.enum(["asc", "desc"]).default("asc"),
+    collegeId:     z.string().uuid().optional(),
+    memberType:    z.enum(["FULL_TIME", "ASSOCIATE"]).optional(),
+    isActive:      z.coerce.boolean().optional(),
+    search:        z.string().max(100).trim().optional(),
+    sortBy:        z.enum(["full_name", "joined_at", "college_name"]).optional(),
+    sortOrder:     z.enum(["asc", "desc"]).default("asc"),
+    accountStatus: z.enum(["pending", "active", "inactive"]).optional(),
   })
   .merge(paginationSchema);
 

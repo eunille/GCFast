@@ -10,7 +10,7 @@ import { apiUpdateMemberSchema } from "@/features/members/types/member.schemas";
 import { mapApiMemberFromDb } from "@/features/members/repositories/member.mapper";
 
 const uuidSchema = z.string().uuid();
-const MEMBER_SELECT = "*, colleges(name, code)";
+const MEMBER_SELECT = "*, colleges(name, code), profiles!members_profile_id_fkey(account_status)";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

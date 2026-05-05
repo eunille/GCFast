@@ -15,7 +15,7 @@ import {
 import { mapApiMemberFromDb } from "@/features/members/repositories/member.mapper";
 
 const ALLOWED_SORT_FIELDS = ["full_name", "joined_at", "college_name"] as const;
-const MEMBER_SELECT = "*, colleges(name, code)";
+const MEMBER_SELECT = "*, colleges(name, code), profiles!members_profile_id_fkey(account_status)";
 
 // ─── GET /api/members ─────────────────────────────────────────────────────────
 
@@ -31,32 +31,144 @@ export const GET = apiHandler(async (req: Request) => {
   const parsed = validate(apiMemberFilterSchema, Object.fromEntries(searchParams));
   if (!parsed.success) return parsed.response;
 
-  const { page, pageSize, sortBy, sortOrder, search, isActive, ...filters } = parsed.data;
+  const { page, pageSize, sortBy, sortOrder, search, isActive: _isActive, accountStatus, ...filters } = parsed.data;
   const { from, to } = toRange({ page, pageSize });
 
-  const supabase = await createSupabaseServer(req);
-  let query = supabase
-    .from("members")
-    .select(MEMBER_SELECT, { count: "exact" })
-    .range(from, to)
-    .eq("is_active", isActive ?? true); // default: active only
+  const supabase      = await createSupabaseServer(req);
+  const supabaseAdmin = getSupabaseAdmin();
 
-  if (filters.collegeId) query = query.eq("college_id", filters.collegeId);
-  if (filters.memberType) query = query.eq("member_type", filters.memberType);
-  if (search) query = applySearch(query, search, ["full_name", "email"]);
+  // Resolve pending profile IDs via admin (bypasses RLS on profiles table).
+  // Used for both the pending filter and the pending-first ordering.
+  const { data: pendingProfileRows } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("account_status", "pending");
+  const pendingIds = (pendingProfileRows ?? []).map((r) => r.id as string);
 
-  query = applySorting(query, sortBy ?? "full_name", sortOrder, [
-    ...ALLOWED_SORT_FIELDS,
-  ]);
+  // Helper: apply collegeId / memberType / search filters to any query
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function applyFilters(q: any) {
+    if (filters.collegeId)  q = q.eq("college_id",  filters.collegeId);
+    if (filters.memberType) q = q.eq("member_type", filters.memberType);
+    if (search) q = applySearch(q, search, ["full_name", "email"]);
+    return q;
+  }
 
-  const { data, count, error } = await query;
-  if (error) throw new Error(error.message);
+  const sortField = sortBy ?? "full_name";
+
+  // ── PENDING-ONLY filter ───────────────────────────────────────────────────
+  if (accountStatus === "pending") {
+    if (pendingIds.length === 0) {
+      return successResponse([], buildMeta(0, { page, pageSize }));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any = supabase
+      .from("members")
+      .select(MEMBER_SELECT, { count: "exact" })
+      .range(from, to)
+      .eq("is_active", true)
+      .in("profile_id", pendingIds);
+    q = applyFilters(q);
+    q = applySorting(q, sortField, sortOrder, [...ALLOWED_SORT_FIELDS]);
+    const { data, count, error } = await q;
+    if (error) throw new Error(error.message);
+    return successResponse(
+      (data ?? []).map(mapApiMemberFromDb),
+      buildMeta(count ?? 0, { page, pageSize })
+    );
+  }
+
+  // ── INACTIVE filter ───────────────────────────────────────────────────────
+  if (accountStatus === "inactive") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any = supabase
+      .from("members")
+      .select(MEMBER_SELECT, { count: "exact" })
+      .range(from, to)
+      .eq("is_active", false);
+    q = applyFilters(q);
+    q = applySorting(q, sortField, sortOrder, [...ALLOWED_SORT_FIELDS]);
+    const { data, count, error } = await q;
+    if (error) throw new Error(error.message);
+    return successResponse(
+      (data ?? []).map(mapApiMemberFromDb),
+      buildMeta(count ?? 0, { page, pageSize })
+    );
+  }
+
+  // ── DEFAULT (ACTIVE) VIEW — pending members always appear first ───────────
+  //
+  // Strategy: two queries merged, so pending members occupy the first N slots
+  // across ALL pages regardless of alphabetical order.
+  //
+  //  Page 1 = [pending[0..min(pageSize,pendingTotal)-1]] + [active[0..remaining-1]]
+  //  Page 2 = [active[remaining..remaining+pageSize-1]]   (pending slots exhausted)
+
+  // Step 1 — fetch ALL filtered pending members (no range — typically few)
+  let pendingMembers: ReturnType<typeof mapApiMemberFromDb>[] = [];
+  if (pendingIds.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let pq: any = supabase
+      .from("members")
+      .select(MEMBER_SELECT)
+      .eq("is_active", true)
+      .in("profile_id", pendingIds);
+    pq = applyFilters(pq);
+    pq = applySorting(pq, sortField, sortOrder, [...ALLOWED_SORT_FIELDS]);
+    const { data: pd } = await pq;
+    pendingMembers = (pd ?? []).map(mapApiMemberFromDb);
+  }
+
+  const pendingTotal = pendingMembers.length;
+  // Slice of pending members that belong on the current page
+  const pendingSlice = pendingMembers.slice(from, to + 1);
+
+  // Step 2 — fetch active (non-pending) members with adjusted offset
+  const activeFrom = Math.max(0, from - pendingTotal);
+  const activeTo   = to - pendingTotal;   // negative means this page is all-pending
+
+  let activeMembers: ReturnType<typeof mapApiMemberFromDb>[] = [];
+  let activeTotal = 0;
+
+  if (activeTo >= 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let aq: any = supabase
+      .from("members")
+      .select(MEMBER_SELECT, { count: "exact" })
+      .range(activeFrom, activeTo)
+      .eq("is_active", true);
+    if (pendingIds.length > 0) {
+      // Must use .or() so that NULL profile_id rows are NOT excluded.
+      // SQL "NOT IN" with NULLs: NULL NOT IN (...) = NULL (falsy) → rows dropped.
+      aq = aq.or(`profile_id.is.null,profile_id.not.in.(${pendingIds.join(",")})`);
+    }
+    aq = applyFilters(aq);
+    aq = applySorting(aq, sortField, sortOrder, [...ALLOWED_SORT_FIELDS]);
+    const { data: ad, count, error } = await aq;
+    if (error) throw new Error(error.message);
+    activeMembers = (ad ?? []).map(mapApiMemberFromDb);
+    activeTotal   = count ?? 0;
+  } else {
+    // Page is entirely filled by pending members; still need active total for pagination
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let cq: any = supabase
+      .from("members")
+      .select("*", { count: "exact", head: true })
+      .eq("is_active", true);
+    if (pendingIds.length > 0) {
+      cq = cq.or(`profile_id.is.null,profile_id.not.in.(${pendingIds.join(",")})`);
+    }
+    cq = applyFilters(cq);
+    const { count } = await cq;
+    activeTotal = count ?? 0;
+  }
 
   return successResponse(
-    (data ?? []).map(mapApiMemberFromDb),
-    buildMeta(count ?? 0, { page, pageSize })
+    [...pendingSlice, ...activeMembers],
+    buildMeta(pendingTotal + activeTotal, { page, pageSize })
   );
 });
+
 
 // ─── POST /api/members ────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { MemberDataTable } from "./MemberDataTable";
 import { getMemberColumns } from "./columns";
@@ -24,6 +25,7 @@ export function MemberList() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useMembers(filter);
+
   const members = data?.data ?? [];
   const meta = data?.meta;
 
