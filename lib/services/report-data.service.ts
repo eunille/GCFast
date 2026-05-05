@@ -66,8 +66,12 @@ export type ReportData = ReportResult;
 
 // ─── Internal row type from member_payment_summary ────────────────────────────
 
+// After migration 005, members with no college have college_id=null / college_name=null.
+const NO_COLLEGE_KEY = "__no_college__";
+const NO_COLLEGE_NAME = "No College";
+
 type SRow = {
-  member_id: string; full_name: string; college_id: string; college_name: string;
+  member_id: string; full_name: string; college_id: string | null; college_name: string | null;
   member_type: string; outstanding_balance: number; periods_paid: number;
   periods_expected: number; membership_fee_paid: boolean; status: string;
 };
@@ -85,7 +89,7 @@ async function buildPaymentSummary(
   const { data: sData, error: sErr } = await sq;
   if (sErr) throw new Error(sErr.message);
 
-  const sRows = (sData ?? []) as Array<{ member_id: string; college_id: string; college_name: string; outstanding_balance: number }>;
+  const sRows = (sData ?? []) as Array<{ member_id: string; college_id: string | null; college_name: string | null; outstanding_balance: number }>;
   const memberIds = sRows.map(r => r.member_id);
   let payments: Array<{ member_id: string; amount_paid: number }> = [];
 
@@ -100,7 +104,11 @@ async function buildPaymentSummary(
     payments = (pData ?? []) as typeof payments;
   }
 
-  const memberCollegeMap = new Map(sRows.map(r => [r.member_id, { collegeId: r.college_id, collegeName: r.college_name }]));
+  // Use a stable string key for null college_id so Map lookups never use null as a key
+  const memberCollegeMap = new Map(sRows.map(r => [r.member_id, {
+    collegeId: r.college_id ?? NO_COLLEGE_KEY,
+    collegeName: r.college_name ?? NO_COLLEGE_NAME,
+  }]));
 
   type PayAgg = { totalCollected: number; paidIds: Set<string> };
   const payByCollege = new Map<string, PayAgg>();
@@ -116,8 +124,10 @@ async function buildPaymentSummary(
   type MemAgg = { collegeName: string; memberIds: Set<string>; totalOutstanding: number };
   const memByCollege = new Map<string, MemAgg>();
   for (const r of sRows) {
-    if (!memByCollege.has(r.college_id)) memByCollege.set(r.college_id, { collegeName: r.college_name, memberIds: new Set(), totalOutstanding: 0 });
-    const agg = memByCollege.get(r.college_id)!;
+    const key = r.college_id ?? NO_COLLEGE_KEY;
+    const name = r.college_name ?? NO_COLLEGE_NAME;
+    if (!memByCollege.has(key)) memByCollege.set(key, { collegeName: name, memberIds: new Set(), totalOutstanding: 0 });
+    const agg = memByCollege.get(key)!;
     agg.memberIds.add(r.member_id);
     agg.totalOutstanding += Number(r.outstanding_balance);
   }
@@ -129,9 +139,10 @@ async function buildPaymentSummary(
     const membersPaid = pAgg?.paidIds.size ?? 0;
     const outstanding = mAgg.totalOutstanding;
     const rateBase = totalCollected + outstanding;
-    breakdown.push({ collegeId, collegeName: mAgg.collegeName, totalMembers: mAgg.memberIds.size, membersPaid, totalCollected, outstanding, collectionRate: rateBase > 0 ? Math.round((totalCollected / rateBase) * 100) : 0 });
+    // Expose NO_COLLEGE_KEY as empty string in the output so callers can detect it
+    breakdown.push({ collegeId: collegeId === NO_COLLEGE_KEY ? "" : collegeId, collegeName: mAgg.collegeName, totalMembers: mAgg.memberIds.size, membersPaid, totalCollected, outstanding, collectionRate: rateBase > 0 ? Math.round((totalCollected / rateBase) * 100) : 0 });
   }
-  breakdown.sort((a, b) => a.collegeName.localeCompare(b.collegeName));
+  breakdown.sort((a, b) => (a.collegeName ?? "").localeCompare(b.collegeName ?? ""));
 
   const totalCollected = payments.reduce((s, p) => s + Number(p.amount_paid), 0);
   const totalMembers = sRows.length;
@@ -143,7 +154,7 @@ async function buildPaymentSummary(
     reportType: "payment_summary",
     generatedAt: new Date().toISOString(),
     startDate: input.startDate, endDate: input.endDate,
-    collegeScope: input.collegeId && sRows[0] ? sRows[0].college_name : "All Colleges",
+    collegeScope: input.collegeId && sRows[0] ? (sRows[0].college_name ?? "All Colleges") : "All Colleges",
     totalCollected, outstanding, totalMembers, membersPaid, membersPaidPercent,
     avgCollectionPerMember: membersPaid > 0 ? totalCollected / membersPaid : 0,
     breakdown,
@@ -167,7 +178,8 @@ async function buildOutstandingBalance(
   const members: OutstandingMemberRow[] = allRows
     .filter(r => Number(r.outstanding_balance) > 0)
     .map(r => ({
-      memberId: r.member_id, fullName: r.full_name, collegeName: r.college_name,
+      memberId: r.member_id, fullName: r.full_name,
+      collegeName: r.college_name ?? NO_COLLEGE_NAME,
       memberType: r.member_type, outstandingBalance: Number(r.outstanding_balance),
       periodsExpected: Number(r.periods_expected ?? 0), periodsPaid: Number(r.periods_paid ?? 0),
     }));
@@ -176,7 +188,7 @@ async function buildOutstandingBalance(
     reportType: "outstanding_balance",
     generatedAt: new Date().toISOString(),
     startDate: input.startDate, endDate: input.endDate,
-    collegeScope: input.collegeId && allRows[0] ? allRows[0].college_name : "All Colleges",
+    collegeScope: input.collegeId && allRows[0] ? (allRows[0].college_name ?? "All Colleges") : "All Colleges",
     totalOutstanding: members.reduce((s, m) => s + m.outstandingBalance, 0),
     membersWithBalance: members.length,
     totalMembers: allRows.length,
@@ -195,23 +207,26 @@ async function buildMembershipStatus(
   const { data, error } = await q;
   if (error) throw new Error(error.message);
 
-  const rows = (data ?? []) as Array<{ college_id: string; college_name: string; status: string }>;
+  const rows = (data ?? []) as Array<{ college_id: string | null; college_name: string | null; status: string }>;
 
   const byCollege = new Map<string, { collegeName: string; total: number; complete: number; hasBalance: number }>();
   for (const r of rows) {
-    if (!byCollege.has(r.college_id)) byCollege.set(r.college_id, { collegeName: r.college_name, total: 0, complete: 0, hasBalance: 0 });
-    const agg = byCollege.get(r.college_id)!;
+    const key = r.college_id ?? NO_COLLEGE_KEY;
+    const name = r.college_name ?? NO_COLLEGE_NAME;
+    if (!byCollege.has(key)) byCollege.set(key, { collegeName: name, total: 0, complete: 0, hasBalance: 0 });
+    const agg = byCollege.get(key)!;
     agg.total++;
     if (r.status === "COMPLETE") agg.complete++; else agg.hasBalance++;
   }
 
   const breakdown: MembershipStatusRow[] = [...byCollege.entries()]
     .map(([collegeId, agg]) => ({
-      collegeId, collegeName: agg.collegeName, totalMembers: agg.total,
+      collegeId: collegeId === NO_COLLEGE_KEY ? "" : collegeId,
+      collegeName: agg.collegeName, totalMembers: agg.total,
       complete: agg.complete, hasBalance: agg.hasBalance,
       completePercent: agg.total > 0 ? Math.round((agg.complete / agg.total) * 100) : 0,
     }))
-    .sort((a, b) => a.collegeName.localeCompare(b.collegeName));
+    .sort((a, b) => (a.collegeName ?? "").localeCompare(b.collegeName ?? ""));
 
   const totalComplete = breakdown.reduce((s, r) => s + r.complete, 0);
   const totalHasBalance = breakdown.reduce((s, r) => s + r.hasBalance, 0);
@@ -221,7 +236,7 @@ async function buildMembershipStatus(
     reportType: "membership_status",
     generatedAt: new Date().toISOString(),
     startDate: input.startDate, endDate: input.endDate,
-    collegeScope: input.collegeId && rows[0] ? rows[0].college_name : "All Colleges",
+    collegeScope: input.collegeId && rows[0] ? (rows[0].college_name ?? "All Colleges") : "All Colleges",
     totalMembers, totalComplete, totalHasBalance,
     overallCompletePercent: totalMembers > 0 ? Math.round((totalComplete / totalMembers) * 100) : 0,
     breakdown,
@@ -304,7 +319,8 @@ async function buildMemberStanding(
 
   const rows = (data ?? []) as Array<SRow>;
   const members: MemberStandingRow[] = rows.map(r => ({
-    memberId: r.member_id, fullName: r.full_name, collegeName: r.college_name,
+    memberId: r.member_id, fullName: r.full_name,
+    collegeName: r.college_name ?? NO_COLLEGE_NAME,
     memberType: r.member_type, membershipFeePaid: Boolean(r.membership_fee_paid),
     periodsPaid: Number(r.periods_paid ?? 0), periodsExpected: Number(r.periods_expected ?? 0),
     outstandingBalance: Number(r.outstanding_balance ?? 0), status: r.status,
@@ -316,7 +332,7 @@ async function buildMemberStanding(
     reportType: "member_standing",
     generatedAt: new Date().toISOString(),
     startDate: input.startDate, endDate: input.endDate,
-    collegeScope: input.collegeId && rows[0] ? rows[0].college_name : "All Colleges",
+    collegeScope: input.collegeId && rows[0] ? (rows[0].college_name ?? "All Colleges") : "All Colleges",
     totalMembers: members.length,
     totalComplete,
     totalHasBalance: members.length - totalComplete,
