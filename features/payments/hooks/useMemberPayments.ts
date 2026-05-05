@@ -10,7 +10,7 @@ import type { Payment } from "../types/payment.types";
 export function useMemberPayments(memberId: string) {
   return useQuery<Payment[]>({
     queryKey: ["payments", "member", memberId],
-    queryFn: () => paymentRepository.getByMember(memberId),
+    queryFn: () => paymentRepository.getByMember(memberId).then((r) => r.data),
     enabled: Boolean(memberId),
   });
 }

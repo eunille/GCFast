@@ -1,7 +1,6 @@
 // features/payments/components/PaymentStatusBadge/PaymentStatusBadge.tsx
 // Layer 4 — PRESENTATIONAL: Renders COMPLETE / HAS_BALANCE badge
 
-import { Badge } from "@/components/ui/badge";
 import type { PaymentStatus } from "@/lib/models";
 
 interface Props {
@@ -11,15 +10,15 @@ interface Props {
 export function PaymentStatusBadge({ status }: Props) {
   if (status === "COMPLETE") {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 font-medium">
+      <span className="inline-flex items-center justify-center rounded-md px-2.5 py-1 text-[11px] font-semibold leading-none bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
         All Paid
-      </Badge>
+      </span>
     );
   }
   return (
-    <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 font-medium">
+    <span className="inline-flex items-center justify-center rounded-md px-2.5 py-1 text-[11px] font-semibold leading-none bg-red-50 text-red-600 border border-red-200 whitespace-nowrap">
       Has Balance
-    </Badge>
+    </span>
   );
 }
 

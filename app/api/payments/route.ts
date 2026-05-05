@@ -63,7 +63,7 @@ export const GET = apiHandler(async (req: Request) => {
   type MemberJoin = { id: string; full_name: string; email: string; college_id: string } | null;
   type PeriodJoin = { id: string; label: string } | null;
 
-  const mapped = (data ?? []).map((row: Record<string, unknown>) => ({
+  const mapped = ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
     id: row.id,
     memberId: row.member_id,
     paymentType: row.payment_type,

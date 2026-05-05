@@ -19,6 +19,8 @@ export type { PaymentRecord as Payment } from "@/lib/models";
 // Alias: PaymentSummaryRow is the canonical name — MemberPaymentSummary kept for files not yet migrated.
 export type { PaymentSummaryRow as MemberPaymentSummary } from "@/lib/models";
 
+import type { PaymentStatus } from "@/lib/models";
+
 // Pure business rule — no React, no Supabase
 export function computePaymentStatus(
   summary: { membershipFeePaid?: boolean; membership_fee_paid?: boolean; outstandingBalance?: number; outstanding_balance?: number }

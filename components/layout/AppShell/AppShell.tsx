@@ -29,16 +29,16 @@ export function AppShell({ children, navItems }: Props) {
       <AppSidebar navItems={navItems} />
 
       {/* Main area — flex-1 takes remaining space after the sidebar spacer */}
-      <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden bg-muted">
-        {/* Top bar */}
-        <header className="flex items-center gap-3 h-14 px-4 shrink-0 bg-background border-b border-border">
+      <div className="flex flex-col flex-1 min-w-0 min-h-screen bg-muted">
+        {/* Top bar — sticky so it stays visible during page scroll */}
+        <header className="flex items-center gap-3 h-14 px-4 shrink-0 sticky top-0 z-10 bg-background border-b border-border">
           <SidebarTrigger className="text-muted-foreground" />
           <Separator orientation="vertical" className="h-5" />
           <span className="text-base font-semibold text-primary">{title}</span>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 min-h-0 overflow-y-auto p-6 bg-white">{children}</main>
+        {/* Page content — natural height, page body scrolls */}
+        <main className="flex-1 p-6 bg-white">{children}</main>
       </div>
     </SidebarProvider>
   );

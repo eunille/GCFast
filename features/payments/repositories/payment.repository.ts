@@ -63,6 +63,15 @@ export const paymentRepository = {
     return { data: json.data, meta: json.meta! };
   },
 
+  /** GET /api/payments/summaries — all member payment summaries (no pagination wrapper) */
+  async getAllSummaries(collegeId?: string): Promise<PaymentSummaryRow[]> {
+    const qs = buildQuery({ collegeId, pageSize: 1000 } as Record<string, string | number | boolean | undefined>);
+    const res = await authFetch(`/api/payments/summaries${qs}`);
+    const json = (await res.json()) as ApiSuccess<PaymentSummaryRow[]>;
+    if (!json.success) throw new Error((json as { error?: { message?: string } }).error?.message ?? "API error");
+    return json.data;
+  },
+
   /** POST /api/payments — record a new payment */
   async record(input: RecordPaymentInput): Promise<PaymentRecord> {
     const res = await authFetch("/api/payments", {
