@@ -18,7 +18,7 @@ export function StandingBadge({ isActive }: Props) {
           : "bg-status-outstanding-bg text-status-outstanding border-status-outstanding"
       )}
     >
-      {isActive ? "Paid" : "Not Paid"}
+      {isActive ? "Active" : "Inactive"}
     </Badge>
   );
 }

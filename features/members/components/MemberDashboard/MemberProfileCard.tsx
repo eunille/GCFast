@@ -4,7 +4,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { StandingBadge } from "../StandingBadge";
-import { colors, spacing } from "@/theme";
 import { formatDate } from "@/lib/utils/format";
 import type { Member } from "@/lib/models";
 
@@ -15,12 +14,8 @@ interface Props {
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 py-1.5">
-      <span className="text-sm shrink-0" style={{ color: colors.text.secondary }}>
-        {label}
-      </span>
-      <span className="text-sm text-right" style={{ color: colors.text.primary }}>
-        {value}
-      </span>
+      <span className="text-sm shrink-0 text-muted-foreground">{label}</span>
+      <span className="text-sm text-right text-foreground">{value}</span>
     </div>
   );
 }
@@ -28,21 +23,17 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export function MemberProfileCard({ member }: Props) {
   return (
     <Card>
-      <CardContent style={{ padding: spacing[5] }}>
+      <CardContent className="p-5">
         {/* Name + status */}
-        <div className="flex items-start justify-between gap-2" style={{ marginBottom: spacing[3] }}>
+        <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <h2 className="text-lg font-semibold" style={{ color: colors.text.primary }}>
-              {member.fullName}
-            </h2>
-            <p className="text-sm" style={{ color: colors.text.secondary }}>
-              {member.email}
-            </p>
+            <h2 className="text-lg font-semibold text-foreground">{member.fullName}</h2>
+            <p className="text-sm text-muted-foreground">{member.email}</p>
           </div>
           <StandingBadge isActive={member.isActive} />
         </div>
 
-        <Separator style={{ marginBottom: spacing[3] }} />
+        <Separator className="mb-3" />
 
         <Row label="College" value={member.collegeName ?? "—"} />
         <Row
@@ -55,22 +46,12 @@ export function MemberProfileCard({ member }: Props) {
         )}
         {member.notes && <Row label="Notes" value={member.notes} />}
 
-        <Separator style={{ margin: `${spacing[3]} 0` }} />
+        <Separator className="my-3" />
 
-        <Row
-          label="Created"
-          value={formatDate(member.createdAt)}
-        />
-        <Row
-          label="Last Updated"
-          value={formatDate(member.updatedAt)}
-        />
-        {member.profileId && (
-          <Row label="Account" value="Linked ✓" />
-        )}
+        <Row label="Created" value={formatDate(member.createdAt)} />
+        <Row label="Last Updated" value={formatDate(member.updatedAt)} />
+        {member.profileId && <Row label="Account" value="Linked ✓" />}
       </CardContent>
     </Card>
   );
 }
-
-

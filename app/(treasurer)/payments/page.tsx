@@ -1,9 +1,8 @@
 // app/(treasurer)/payments/page.tsx
-// Layer 4 — PRESENTATIONAL: Payment tracking page
+// Redirects to the canonical /treasurer/payments URL
+import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
-
-export default function PaymentsPage() {
-  return null;
+export default function OldPaymentsRedirect() {
+  redirect("/treasurer/payments");
 }
 

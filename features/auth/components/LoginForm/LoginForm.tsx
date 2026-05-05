@@ -43,7 +43,7 @@ export function LoginForm() {
             className="object-contain"
           />
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome to GFAC-ASS
+            Welcome to GCFAs-App
           </CardTitle>
           <CardDescription>
             Don&apos;t have an account?{" "}
