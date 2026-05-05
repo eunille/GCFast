@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { useColleges } from "@/lib/hooks/useColleges";
 import { updateMemberSchema } from "../../types/member.schemas";
-import { colors, spacing } from "@/theme";
 import type { Member, UpdateMemberInput } from "@/lib/models";
 import { ZodError } from "zod";
 
@@ -65,7 +64,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: spacing[4] }}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <Label htmlFor="em-fullName">Full Name *</Label>
         <Input
@@ -73,7 +72,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
           value={form.fullName ?? ""}
           onChange={(e) => set("fullName", e.target.value)}
         />
-        {errors.fullName && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.fullName}</p>}
+        {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -84,7 +83,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
           value={form.email ?? ""}
           onChange={(e) => set("email", e.target.value)}
         />
-        {errors.email && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.email}</p>}
+        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -104,7 +103,7 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
             ))}
           </SelectContent>
         </Select>
-        {errors.collegeId && <p className="text-xs" style={{ color: colors.status.outstanding }}>{errors.collegeId}</p>}
+        {errors.collegeId && <p className="text-xs text-destructive">{errors.collegeId}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -153,16 +152,10 @@ export function EditMemberForm({ member, onSubmit, onCancel, isLoading }: Props)
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={isLoading}
-          style={{ backgroundColor: colors.brand.accent }}
-        >
+        <Button type="submit" disabled={isLoading}>
           {isLoading ? "Saving…" : "Save Changes"}
         </Button>
       </div>
     </form>
   );
 }
-
-

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportFilters } from "@/features/reports/components/ReportFilters";
 import { ReportPreview } from "@/features/reports/components/ReportPreview";
+import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import {
   useGenerateReport,
   type GenerateReportResult,
@@ -125,6 +126,13 @@ export default function ReportsPage() {
         onGenerate={() => handleGenerate()}
         isLoading={isPending}
       />
+
+      {/* Loading state */}
+      {isPending && (
+        <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+          <LoadingSkeleton rows={6} />
+        </div>
+      )}
 
       {/* Report preview */}
       {report?.format === "json" && report.data && (

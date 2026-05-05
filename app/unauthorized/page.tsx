@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { colors, typography, radius, shadows } from "@/theme";
 
 export const metadata = {
   title: "Access Denied — GFAST-MPTS",
@@ -19,65 +18,25 @@ export const metadata = {
 
 export default function UnauthorizedPage() {
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ background: colors.brand.subtle }}
-    >
-      <Card
-        className="w-full max-w-md text-center"
-        style={{ boxShadow: shadows.lg, borderRadius: radius.xl }}
-      >
+    <main className="min-h-screen flex items-center justify-center bg-[#D6E4F0] px-4 py-12">
+      <Card className="w-full max-w-md text-center shadow-lg rounded-xl">
         <CardHeader className="pb-2">
-          {/* Icon */}
-          <div
-            className="mx-auto mb-4 flex items-center justify-center w-16 h-16"
-            style={{
-              background: colors.status.outstandingBg,
-              borderRadius: radius.full,
-            }}
-          >
-            <span
-              style={{
-                color: colors.status.outstanding,
-                fontSize: typography.fontSize["2xl"],
-                fontWeight: typography.fontWeight.bold,
-              }}
-            >
-              ✕
-            </span>
+          <div className="mx-auto mb-4 flex items-center justify-center w-16 h-16 bg-red-100 rounded-full">
+            <span className="text-red-500 text-2xl font-bold">✕</span>
           </div>
 
-          <CardTitle
-            style={{
-              color: colors.brand.primary,
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
+          <CardTitle className="text-[#1E3A5F] text-xl font-bold">
             Access Denied
           </CardTitle>
 
-          <CardDescription
-            style={{
-              color: colors.text.secondary,
-              fontSize: typography.fontSize.sm,
-            }}
-          >
+          <CardDescription className="text-muted-foreground text-sm">
             You don&apos;t have permission to view this page. Please contact
             your administrator if you believe this is a mistake.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="pt-2">
-          <Button
-            asChild
-            className="w-full"
-            style={{
-              background: colors.brand.primary,
-              color: colors.surface.page,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
+          <Button asChild className="w-full font-semibold">
             <Link href="/login">Return to Login</Link>
           </Button>
         </CardContent>

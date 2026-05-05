@@ -1,9 +1,8 @@
 // app/(treasurer)/reports/page.tsx
-// Layer 4 — PRESENTATIONAL: Reports generation page
+// Redirects to the canonical /treasurer/reports URL
+import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
-
-export default function ReportsPage() {
-  return null;
+export default function OldReportsRedirect() {
+  redirect("/treasurer/reports");
 }
 

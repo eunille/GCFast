@@ -126,9 +126,9 @@ export function getMemberColumns(
       ),
     },
 
-    // ── Payment Status ─────────────────────────────────────────────────────────
+    // ── Member Status (account active/inactive) ────────────────────────────────
     {
-      id: "paymentStatus",
+      id: "memberStatus",
       header: "Status",
       cell: ({ row }) => <StandingBadge isActive={row.original.isActive} />,
     },
