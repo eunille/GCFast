@@ -4,6 +4,8 @@
 import type { Payment, MemberPaymentSummary } from "../types/payment.types";
 
 export function mapPaymentFromDb(row: Record<string, unknown>): Payment {
+  type PeriodJoin = { month: number; year: number; label: string } | null;
+  const period = (row.academic_periods as PeriodJoin) ?? null;
   return {
     id:               row.id as string,
     memberId:         row.member_id as string,
@@ -11,6 +13,9 @@ export function mapPaymentFromDb(row: Record<string, unknown>): Payment {
     amountPaid:       row.amount_paid as number,
     paymentDate:      row.payment_date as string,
     academicPeriodId: (row.academic_period_id as string | null) ?? null,
+    periodMonth:      period?.month ?? null,
+    periodYear:       period?.year ?? null,
+    periodLabel:      period?.label ?? null,
     referenceNumber:  (row.reference_number as string | null) ?? null,
     notes:            (row.notes as string | null) ?? null,
     recordedBy:       row.recorded_by as string,
