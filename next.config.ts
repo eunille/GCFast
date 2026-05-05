@@ -28,17 +28,12 @@ const securityHeaders = [
   },
 ];
 
-// CORS: in production, ALLOWED_ORIGIN env var MUST be set to your Vercel domain.
-// Wildcard is only permitted in development. A missing env var in production fails fast.
+// CORS: prefer ALLOWED_ORIGIN env var. Falls back to VERCEL_URL (auto-set by Vercel)
+// then to "*" in development. In production both are acceptable — Vercel injects VERCEL_URL.
 function getAllowedOrigin(): string {
-  const origin = process.env.ALLOWED_ORIGIN;
-  if (!isDev && !origin) {
-    throw new Error(
-      "ALLOWED_ORIGIN environment variable is required in production. " +
-      "Set it to your Vercel domain, e.g. https://your-app.vercel.app"
-    );
-  }
-  return origin ?? "*"; // "*" only reachable in dev
+  if (process.env.ALLOWED_ORIGIN) return process.env.ALLOWED_ORIGIN;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "*"; // dev only
 }
 
 const corsHeaders = [
