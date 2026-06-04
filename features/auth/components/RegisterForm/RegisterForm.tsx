@@ -15,10 +15,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AuthBackground } from "@/components/layout/AuthBackground";
 
 interface Props {
   role: RegisterRole;
@@ -64,7 +64,9 @@ export function RegisterForm({ role }: Props) {
   // ── Email confirmation pending ─────────────────────────────────────────────
   if (registered) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4">
+      <>
+        <AuthBackground />
+        <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 relative z-0">
         <Card className="w-full max-w-sm shadow-none">
           <CardContent className="flex flex-col items-center gap-6 text-center pt-8 pb-8">
             <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -88,19 +90,22 @@ export function RegisterForm({ role }: Props) {
             </Button>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4 py-12">
+    <>
+      <AuthBackground />
+      <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12 relative z-0">
       <Card className="w-full max-w-sm shadow-none">
         <CardHeader className="items-center text-center gap-2 pb-4">
           <Image
             src="/gcfast_logo.png"
             alt="GFAST"
-            width={40}
-            height={40}
+            width={64}
+            height={64}
             className="object-contain"
           />
           <div className="flex flex-col items-center gap-1.5">
@@ -236,20 +241,8 @@ export function RegisterForm({ role }: Props) {
           </form>
         </CardContent>
 
-        <CardFooter className="justify-center pb-6 pt-2">
-          <p className="text-center text-xs text-muted-foreground leading-relaxed">
-            By clicking continue, you agree to our{" "}
-            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
-              Terms of Service
-            </span>{" "}
-            and{" "}
-            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
-              Privacy Policy
-            </span>
-            .
-          </p>
-        </CardFooter>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
