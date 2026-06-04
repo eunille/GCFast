@@ -44,7 +44,9 @@ function MetricCard({ label, value, sub, icon, iconBg }: MetricCardProps) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtDate(iso: string) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-PH", {
+  // Handle both DATE format (YYYY-MM-DD) and TIMESTAMPTZ format (ISO 8601 with time/timezone)
+  const date = new Date(iso);
+  return date.toLocaleDateString("en-PH", {
     year: "numeric",
     month: "short",
     day: "numeric",

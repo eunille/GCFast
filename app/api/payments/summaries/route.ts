@@ -63,8 +63,9 @@ export const GET = apiHandler(async (req: Request) => {
     query = query.eq("membership_fee_paid", hasMembershipFee);
   if (month !== undefined)
     query = query.contains("months_paid", [month]);
-  if (year !== undefined)
-    query = query.eq("year_ref", year);
+  // Note: year filtering removed - the member_payment_summary view doesn't have a year_ref column
+  // The view shows payment summaries for active academic periods only
+  // To support year filtering, the view would need to be redesigned to track payment years
   if (search) query = applySearch(query, search, ["full_name"]);
 
   query = applySorting(query, sortBy ?? "full_name", sortOrder, [

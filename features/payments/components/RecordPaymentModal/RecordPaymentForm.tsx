@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { useAcademicPeriods } from "@/lib/hooks/useAcademicPeriods";
 import { useCurrentRates } from "@/features/dues-configurations/hooks/useCurrentRates";
 import { useMember } from "@/features/members/hooks/useMember";
@@ -31,7 +32,7 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
 
   const [paymentType, setPaymentType] = useState<"MEMBERSHIP_FEE" | "MONTHLY_DUES">("MONTHLY_DUES");
   const [amountOverride, setAmountOverride] = useState<string | null>(null);
-  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [paymentDate, setPaymentDate] = useState<string | undefined>(undefined); // undefined = use current time
 
   // Derive the suggested amount from rates — no setState in an effect.
   const suggestedAmount = useMemo(() => {
@@ -67,7 +68,16 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
     const amount = parseFloat(amountPaid);
     if (!amountPaid || isNaN(amount) || amount <= 0)
       errs.amountPaid = "Amount must be greater than 0";
-    if (!paymentDate) errs.paymentDate = "Date is required";
+    
+    // Validate payment date if provided (no future dates)
+    if (paymentDate) {
+      const selectedDate = new Date(paymentDate);
+      const now = new Date();
+      if (selectedDate > now) {
+        errs.paymentDate = "Payment date cannot be in the future";
+      }
+    }
+    
     if (paymentType === "MONTHLY_DUES" && !academicPeriodId)
       errs.academicPeriodId = "Academic period is required for Monthly Dues";
     setErrors(errs);
@@ -160,21 +170,15 @@ export function RecordPaymentForm({ memberId, onSubmit, isLoading }: Props) {
         </div>
       )}
 
-      {/* Payment Date */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="paymentDate">
-          Payment Date <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="paymentDate"
-          type="date"
-          value={paymentDate}
-          onChange={(e) => setPaymentDate(e.target.value)}
-        />
-        {errors.paymentDate && (
-          <p className="text-xs text-destructive">{errors.paymentDate}</p>
-        )}
-      </div>
+      {/* Payment Date & Time */}
+      <DateTimePicker
+        value={paymentDate}
+        onChange={setPaymentDate}
+        label="Payment Date & Time"
+        placeholder="Leave as 'Now' for current date/time, or click to customize"
+        maxDate={new Date()} // No future dates
+        error={errors.paymentDate}
+      />
 
       {/* Reference Number (optional) */}
       <div className="flex flex-col gap-1.5">

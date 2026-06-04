@@ -110,9 +110,9 @@ export function DashboardPaymentTable({ onRecord }: Props) {
             </SelectContent>
           </Select>
 
-          <Button variant="ghost" size="sm" className="h-9 gap-1.5 text-muted-foreground">
-            <Filter className="h-4 w-4" />
-          </Button>
+           <Button variant="ghost" size="sm" className="h-9 gap-1.5 text-muted-foreground">
+             <Filter className="h-4 w-4" />
+           </Button>
         </div>
 
         <div className="flex items-center gap-2">

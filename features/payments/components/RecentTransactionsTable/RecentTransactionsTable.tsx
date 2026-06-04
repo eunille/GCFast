@@ -39,17 +39,25 @@ function shortId(id: string, ref: string | null): string {
   return `#${id.replace(/-/g, "").slice(-5).toUpperCase()}`;
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-PH", {
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
     month: "numeric",
     day: "numeric",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 }
 
 function paymentTypeLabel(tx: PaymentTransaction): string {
   if (tx.paymentType === "MEMBERSHIP_FEE") return "Membership Fee";
-  if (tx.periodLabel) return `Monthly - ${tx.periodLabel}`;
+  if (tx.periodLabel) {
+    // Remove year from period label (e.g., "April 2026" -> "April")
+    const monthOnly = tx.periodLabel.replace(/\s+\d{4}$/, "");
+    return `Monthly - ${monthOnly}`;
+  }
   return "Monthly Dues";
 }
 
@@ -133,27 +141,45 @@ export function RecentTransactionsTable({ onRecord }: Props) {
             </SelectContent>
           </Select>
 
-          {/* Payment type */}
-          <Select
-            value={filter.paymentType ?? "all"}
-            onValueChange={(v) =>
-              setFilter((f) => ({
-                ...f,
-                paymentType: v === "all" ? undefined : (v as "MEMBERSHIP_FEE" | "MONTHLY_DUES"),
-                page: 1,
-              }))
-            }
-          >
-            <SelectTrigger className="h-9 w-40">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="MEMBERSHIP_FEE">Membership Fee</SelectItem>
-              <SelectItem value="MONTHLY_DUES">Monthly Dues</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+           {/* Payment type */}
+           <Select
+             value={filter.paymentType ?? "all"}
+             onValueChange={(v) =>
+               setFilter((f) => ({
+                 ...f,
+                 paymentType: v === "all" ? undefined : (v as "MEMBERSHIP_FEE" | "MONTHLY_DUES"),
+                 page: 1,
+               }))
+             }
+           >
+             <SelectTrigger className="h-9 w-40">
+               <SelectValue placeholder="All Types" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="all">All Types</SelectItem>
+               <SelectItem value="MEMBERSHIP_FEE">Membership Fee</SelectItem>
+               <SelectItem value="MONTHLY_DUES">Monthly Dues</SelectItem>
+             </SelectContent>
+           </Select>
+
+           {/* Year filter */}
+           <Select
+             value={filter.year?.toString() ?? "all"}
+             onValueChange={(v) =>
+               setFilter((f) => ({ ...f, year: v === "all" ? undefined : parseInt(v, 10), page: 1 }))
+             }
+           >
+             <SelectTrigger className="h-9 w-32">
+               <SelectValue placeholder="All Years" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="all">All Years</SelectItem>
+               {[2024, 2025, 2026].map((y) => (
+                 <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+               ))}
+             </SelectContent>
+           </Select>
+         </div>
 
         {/* Actions */}
         <div className="flex gap-2">
@@ -175,17 +201,17 @@ export function RecentTransactionsTable({ onRecord }: Props) {
       )}
 
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-24">Bill No.</TableHead>
-            <TableHead>Member</TableHead>
-            <TableHead>Payment Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Payment Type</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead className="w-16" />
-          </TableRow>
-        </TableHeader>
+         <TableHeader>
+           <TableRow>
+             <TableHead className="w-24">Bill No.</TableHead>
+             <TableHead>Member</TableHead>
+             <TableHead>Payment Date & Time</TableHead>
+             <TableHead>Status</TableHead>
+             <TableHead>Payment Type</TableHead>
+             <TableHead className="text-right">Amount</TableHead>
+             <TableHead className="w-16" />
+           </TableRow>
+         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
@@ -217,9 +243,9 @@ export function RecentTransactionsTable({ onRecord }: Props) {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatDate(tx.paymentDate)}
-                </TableCell>
+                 <TableCell className="text-sm text-muted-foreground">
+                   {formatDateTime(tx.paymentDate)}
+                 </TableCell>
                 <TableCell>
                   <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs font-medium">
                     Paid

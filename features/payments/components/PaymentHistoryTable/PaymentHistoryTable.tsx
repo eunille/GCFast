@@ -21,11 +21,15 @@ interface Props {
   isLoading?: boolean;
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-PH", {
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 }
 
@@ -62,7 +66,7 @@ export function PaymentHistoryTable({ payments, isLoading }: Props) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-32">Date</TableHead>
+          <TableHead className="w-40">Date & Time</TableHead>
           <TableHead>Description</TableHead>
           <TableHead className="w-28 text-right">Amount</TableHead>
           <TableHead className="w-24 text-center">Status</TableHead>
@@ -73,7 +77,7 @@ export function PaymentHistoryTable({ payments, isLoading }: Props) {
         {payments.map((p) => (
           <TableRow key={p.id}>
             <TableCell className="text-sm text-muted-foreground">
-              {formatDate(p.paymentDate)}
+              {formatDateTime(p.paymentDate)}
             </TableCell>
             <TableCell className="text-sm font-medium text-foreground">
               {getDescription(p)}
