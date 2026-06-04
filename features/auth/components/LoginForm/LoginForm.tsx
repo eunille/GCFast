@@ -14,11 +14,10 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AuthBackground } from "@/components/layout/AuthBackground";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -32,14 +31,16 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f9fafb] px-4">
-      <Card className="w-full max-w-sm shadow-none">
+    <>
+      <AuthBackground />
+      <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 relative z-0">
+        <Card className="w-full max-w-sm shadow-none">
         <CardHeader className="items-center text-center gap-2 pb-4">
           <Image
             src="/gcfast_logo.png"
             alt="GFAST"
-            width={40}
-            height={40}
+            width={64}
+            height={64}
             className="object-contain"
           />
           <CardTitle className="text-2xl font-bold tracking-tight">
@@ -122,20 +123,8 @@ export function LoginForm() {
           </Button>
         </CardContent>
 
-        <CardFooter className="justify-center pb-6 pt-2">
-          <p className="text-center text-xs text-muted-foreground leading-relaxed">
-            By clicking continue, you agree to our{" "}
-            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
-              Terms of Service
-            </span>{" "}
-            and{" "}
-            <span className="underline underline-offset-4 cursor-pointer hover:text-foreground transition-colors">
-              Privacy Policy
-            </span>
-            .
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 }
