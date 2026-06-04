@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Check, Minus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { useAcademicPeriods } from "@/lib/hooks/useAcademicPeriods";
 import { useCurrentRates } from "@/features/dues-configurations/hooks/useCurrentRates";
 import { useMemberPaymentSummary } from "../../hooks/useMemberPaymentSummary";
@@ -32,6 +33,8 @@ export interface PaymentFormValues {
   selectedMonths: number[];
   /** Amount — used only for MEMBERSHIP_FEE */
   amountPaid: string;
+  /** Optional payment date/time — undefined = current time */
+  paymentDate?: string;
   notes: string;
 }
 
@@ -401,6 +404,15 @@ export function PaymentDetailsStep({ member, values, onChange, errors }: Props) 
         </div>
       )}
 
+      {/* Payment Date & Time */}
+      <DateTimePicker
+        value={values.paymentDate}
+        onChange={(v) => onChange({ ...values, paymentDate: v })}
+        label="Payment Date & Time"
+        placeholder="Leave as 'Now' for current date/time, or click to customize"
+        maxDate={new Date()} // No future dates
+      />
+
       {/* Notes */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="notes" className="flex gap-1">
@@ -432,15 +444,13 @@ export function buildPaymentInputs(
   values: PaymentFormValues,
   periods: AcademicPeriod[]
 ): RecordPaymentInput[] {
-  const today = new Date().toISOString().slice(0, 10);
-
   if (values.paymentType === "MEMBERSHIP_FEE") {
     return [
       {
         memberId: member.id,
         paymentType: "MEMBERSHIP_FEE",
         amountPaid: parseFloat(values.amountPaid),
-        paymentDate: today,
+        paymentDate: values.paymentDate, // undefined = use current time (API default)
         notes: values.notes || undefined,
       },
     ];
@@ -454,7 +464,7 @@ export function buildPaymentInputs(
       memberId: member.id,
       paymentType: "MONTHLY_DUES",
       amountPaid: MONTHLY_FEE,
-      paymentDate: today,
+      paymentDate: values.paymentDate, // undefined = use current time (API default)
       academicPeriodId: period?.id,
       notes: values.notes || undefined,
     };

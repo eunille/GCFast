@@ -1,8 +1,18 @@
 // features/members/components/MemberDashboard/DuesGrid.tsx
 // Layer 4 — PRESENTATIONAL: 12-month dues status table (2-panel layout)
 
+"use client";
+
+import { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils/cn";
 
 const MONTH_NAMES = [
@@ -13,6 +23,7 @@ const MONTH_NAMES = [
 interface Props {
   monthsPaid: number[];
   yearRef?: number;
+  onYearChange?: (year: number) => void;
 }
 
 function PanelHeader() {
@@ -31,12 +42,22 @@ function PanelHeader() {
   );
 }
 
-export function DuesGrid({ monthsPaid, yearRef }: Props) {
-  const year = yearRef ?? new Date().getFullYear();
+export function DuesGrid({ monthsPaid, yearRef, onYearChange }: Props) {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(yearRef ?? currentYear);
+  const year = selectedYear;
   const currentMonth = new Date().getMonth() + 1; // 1-indexed
   const paid = new Set(monthsPaid);
   const paidCount = monthsPaid.length;
   const pct = Math.round((paidCount / 12) * 100);
+
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value, 10);
+    setSelectedYear(newYear);
+    onYearChange?.(newYear);
+  };
+
+  const availableYears = [2024, 2025, 2026];
 
   const renderRow = (month: number) => {
     const isPaid = paid.has(month);
@@ -86,12 +107,28 @@ export function DuesGrid({ monthsPaid, yearRef }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold text-foreground">
-          {year} Monthly Dues Status
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {paidCount} of 12 months paid &bull; {pct}% complete
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-base font-semibold text-foreground">
+              Monthly Dues Status
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {paidCount} of 12 months paid &bull; {pct}% complete
+            </p>
+          </div>
+          <Select value={year.toString()} onValueChange={handleYearChange}>
+            <SelectTrigger className="h-9 w-24 shrink-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent className="p-0 pb-0">
         <div className="grid grid-cols-2 divide-x divide-border border-t border-border">

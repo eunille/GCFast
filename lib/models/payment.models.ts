@@ -9,7 +9,7 @@ export interface PaymentRecord {
   memberId: string;
   paymentType: PaymentType;
   amountPaid: number;
-  paymentDate: string;              // ISO Date YYYY-MM-DD (date payment was physically made)
+  paymentDate: string;              // ISO 8601 datetime YYYY-MM-DDTHH:MM:SS+HH:MM or DATE (date payment was physically made)
   academicPeriodId: string | null;  // null for MEMBERSHIP_FEE
   periodMonth: number | null;       // 1–12: month of the academic period being paid (not payment date)
   periodYear: number | null;        // year of the academic period being paid (not payment date)
@@ -25,7 +25,7 @@ export interface RecordPaymentInput {
   memberId: string;
   paymentType: PaymentType;
   amountPaid: number;
-  paymentDate: string;              // ISO Date YYYY-MM-DD
+  paymentDate?: string;             // ISO 8601 datetime (optional, defaults to current time). No future dates allowed.
   academicPeriodId?: string;        // REQUIRED when paymentType = "MONTHLY_DUES"
   referenceNumber?: string;
   notes?: string;
@@ -49,6 +49,7 @@ export interface PaymentRecordQuery {
   paymentType?: PaymentType;
   collegeId?: string;
   status?: "COMPLETE" | "HAS_BALANCE";
+  year?: number;
 }
 
 /** Query params for GET /api/payments/member/:memberId */

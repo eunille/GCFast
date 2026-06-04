@@ -11,7 +11,7 @@ export const apiRecordPaymentSchema = z
     memberId: z.string().uuid(),
     paymentType: z.enum(["MEMBERSHIP_FEE", "MONTHLY_DUES"]),
     amountPaid: z.number().positive("Amount must be greater than 0"),
-    paymentDate: z.string().date(), // ISO date YYYY-MM-DD
+    paymentDate: z.string().datetime().optional(), // ISO 8601 datetime (optional, defaults to now), e.g. "2025-06-04T15:30:00Z"
     academicPeriodId: z.string().uuid().optional(),
     referenceNumber: z.string().max(100).trim().optional(),
     notes: z.string().max(500).trim().optional(),
@@ -21,6 +21,18 @@ export const apiRecordPaymentSchema = z
     {
       message: "academicPeriodId is required for MONTHLY_DUES",
       path: ["academicPeriodId"],
+    }
+  )
+  .refine(
+    (d) => {
+      if (!d.paymentDate) return true; // optional field
+      const paymentTime = new Date(d.paymentDate);
+      const now = new Date();
+      return paymentTime <= now; // no future dates allowed
+    },
+    {
+      message: "Payment date cannot be in the future",
+      path: ["paymentDate"],
     }
   );
 

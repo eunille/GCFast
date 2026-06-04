@@ -74,14 +74,26 @@ export function ConfirmationStep({ member, values }: Props) {
             </>
           )}
 
-          <Row
-            label="Payment Date"
-            value={new Date().toLocaleDateString("en-PH", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          />
+           <Row
+             label="Payment Date & Time"
+             value={
+               values.paymentDate
+                 ? new Date(values.paymentDate).toLocaleDateString("en-PH", {
+                     year: "numeric",
+                     month: "long",
+                     day: "numeric",
+                     hour: "2-digit",
+                     minute: "2-digit",
+                   })
+                 : new Date().toLocaleDateString("en-PH", {
+                     year: "numeric",
+                     month: "long",
+                     day: "numeric",
+                     hour: "2-digit",
+                     minute: "2-digit",
+                   })
+             }
+           />
 
           {/* Total — highlighted */}
           <div className="flex justify-between items-center py-3 gap-4">

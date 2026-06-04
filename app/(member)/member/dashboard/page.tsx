@@ -5,6 +5,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { useState } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -101,6 +102,7 @@ function exportPaymentsCSV(
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MemberDashboardPage() {
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const { data, isLoading, isError, error } = useMemberDashboard();
   const { data: historyData, isLoading: historyLoading } = usePaymentHistory(
     data?.memberId ?? null
@@ -131,6 +133,18 @@ export default function MemberDashboardPage() {
 
   const currentYear = new Date().getFullYear();
   const allPayments = historyData?.data ?? [];
+  const displayYear = selectedYear ?? currentYear;
+
+  // Derive months paid for the selected year from payment history
+  const monthsPaidForYear = new Set(
+    allPayments
+      .filter(
+        (p) =>
+          p.paymentType === "MONTHLY_DUES" &&
+          new Date(p.paymentDate).getFullYear() === displayYear
+      )
+      .map((p) => new Date(p.paymentDate).getMonth() + 1) // Convert to 1-indexed month
+  );
 
   // Derive totals from payment history
   const totalPaidThisYear = allPayments
@@ -221,8 +235,12 @@ export default function MemberDashboardPage() {
 
       </div>
 
-      {/* ── Monthly dues status ─────────────────────────────────────────────── */}
-      <DuesGrid monthsPaid={data.monthsPaid} yearRef={currentYear} />
+       {/* ── Monthly dues status ─────────────────────────────────────────────── */}
+       <DuesGrid
+         monthsPaid={Array.from(monthsPaidForYear)}
+         yearRef={displayYear}
+         onYearChange={setSelectedYear}
+       />
 
       {/* ── Recent payments ─────────────────────────────────────────────────── */}
       <Card>

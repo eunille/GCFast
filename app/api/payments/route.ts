@@ -13,11 +13,12 @@ import { z } from "zod";
 const PG_UNIQUE_VIOLATION = "23505";
 
 const listQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(10),
   memberId: z.string().uuid().optional(),
   paymentType: z.enum(["MEMBERSHIP_FEE", "MONTHLY_DUES"]).optional(),
   collegeId: z.string().uuid().optional(),
+  year: z.coerce.number().int().positive().optional(),
 });
 
 export const GET = apiHandler(async (req: Request) => {
@@ -33,7 +34,7 @@ export const GET = apiHandler(async (req: Request) => {
   const parsed = validate(listQuerySchema, Object.fromEntries(searchParams));
   if (!parsed.success) return parsed.response;
 
-  const { page, pageSize, memberId, paymentType, collegeId } = parsed.data;
+  const { page, pageSize, memberId, paymentType, collegeId, year } = parsed.data;
   const { from, to } = toRange({ page, pageSize });
 
   const supabase = await createSupabaseServer(req);
@@ -56,6 +57,13 @@ export const GET = apiHandler(async (req: Request) => {
   if (memberId) query = query.eq("member_id", memberId);
   if (paymentType) query = query.eq("payment_type", paymentType);
   if (collegeId) query = query.eq("members.college_id", collegeId);
+  
+  // Filter by year of payment_date if provided
+  if (year) {
+    const startOfYear = `${year}-01-01`;
+    const endOfYear = `${year}-12-31`;
+    query = query.gte("payment_date", startOfYear).lte("payment_date", endOfYear);
+  }
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
@@ -102,8 +110,10 @@ export const POST = apiHandler(async (req: Request) => {
   const parsed = validate(apiRecordPaymentSchema, body);
   if (!parsed.success) return parsed.response;
 
-  const { memberId, paymentType, amountPaid, paymentDate, academicPeriodId, referenceNumber, notes } =
-    parsed.data;
+  const { memberId, paymentType, amountPaid, academicPeriodId, referenceNumber, notes } = parsed.data;
+  
+  // Use provided paymentDate or default to current timestamp
+  const paymentDate = parsed.data.paymentDate || new Date().toISOString();
 
   const supabase = await createSupabaseServer(req);
 
@@ -130,11 +140,10 @@ export const POST = apiHandler(async (req: Request) => {
     }
   }
 
-  // 5. Insert — duplicate prevention is enforced by DB unique constraints.
-  //    Unique constraints required on `payment_records`:
-  //      - UNIQUE (member_id) WHERE payment_type = 'MEMBERSHIP_FEE'
-  //      - UNIQUE (member_id, academic_period_id, payment_type) WHERE payment_type = 'MONTHLY_DUES'
-  //    We catch constraint violation (PG 23505) and return 409 — eliminating TOCTOU race.
+  // 5. Insert payment record
+  //    - Duplicate prevention enforced by DB unique constraints
+  //    - payment_date now accepts TIMESTAMPTZ (full datetime with timezone)
+  //    - If no paymentDate provided, defaults to NOW() via database default
   const { data, error } = await supabase
     .from("payment_records")
     .insert({
