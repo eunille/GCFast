@@ -70,9 +70,9 @@ export function AppSidebar({ navItems }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-sidebar-foreground leading-tight">
-              GFAST-MPTS
+              GCFAS
             </p>
-            <p className="text-xs text-muted-foreground leading-tight">
+            <p className="text-xs text-sidebar-foreground/80 leading-tight">
               Treasurer Portal
             </p>
           </div>
@@ -131,14 +131,14 @@ export function AppSidebar({ navItems }: Props) {
             <p className="text-sm font-semibold text-sidebar-foreground truncate capitalize">
               {displayName}
             </p>
-            <p className="text-xs text-muted-foreground">{roleLabel}</p>
+            <p className="text-xs text-sidebar-foreground/70">{roleLabel}</p>
           </div>
 
           {/* Sign out */}
           <button
             onClick={signOut}
             aria-label="Sign out"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             <LogOut className="h-4 w-4" />
           </button>
