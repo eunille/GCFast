@@ -46,7 +46,7 @@ export function AppSidebar({ navItems }: Props) {
   const { user } = useAuth();
   const { signOut } = useSignOut();
 
-  const displayName = user?.email?.split("@")[0] ?? "User";
+  const displayName = user?.fullName || user?.email?.split("@")[0] || "User";
   const roleLabel =
     user?.role
       ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()

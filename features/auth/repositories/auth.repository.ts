@@ -7,6 +7,7 @@ import type { AccountStatus } from "@/lib/models";
 
 function mapSessionUser(
   user: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>["user"],
+  fullName: string = "",
   accountStatus: AccountStatus = "active"
 ): AuthUser {
   // DB stores role as lowercase ('treasurer'/'member'); normalise to uppercase for client-side type.
@@ -14,21 +15,25 @@ function mapSessionUser(
   return {
     id: user.id,
     email: user.email ?? "",
+    fullName,
     role: (rawRole as AuthUser["role"]) ?? "MEMBER",
     memberId: user.user_metadata?.member_id ?? null,
     accountStatus,
   };
 }
 
-/** Fetch account_status from /api/auth/me — call after sign-in to hydrate the field. */
-async function fetchAccountStatus(): Promise<AccountStatus> {
+/** Fetch user profile data from /api/auth/me — call after sign-in to hydrate fullName and accountStatus. */
+async function fetchUserProfile(): Promise<{ fullName: string; accountStatus: AccountStatus }> {
   try {
     const res = await fetch("/api/auth/me");
-    if (!res.ok) return "active";
+    if (!res.ok) return { fullName: "", accountStatus: "active" };
     const json = await res.json();
-    return (json?.data?.accountStatus as AccountStatus) ?? "active";
+    return {
+      fullName: json?.data?.fullName ?? "",
+      accountStatus: (json?.data?.accountStatus as AccountStatus) ?? "active",
+    };
   } catch {
-    return "active";
+    return { fullName: "", accountStatus: "active" };
   }
 }
 
@@ -51,15 +56,15 @@ export const authRepository = {
     // After account is created, sign in immediately to establish a session.
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.session) throw new Error(error?.message ?? "Sign in after registration failed.");
-    const accountStatus = await fetchAccountStatus();
-    return mapSessionUser(data.session.user, accountStatus);
+    const profile = await fetchUserProfile();
+    return mapSessionUser(data.session.user, profile.fullName, profile.accountStatus);
   },
 
   async signIn(email: string, password: string): Promise<AuthUser> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.session) throw new Error(error?.message ?? "Sign in failed");
-    const accountStatus = await fetchAccountStatus();
-    return mapSessionUser(data.session.user, accountStatus);
+    const profile = await fetchUserProfile();
+    return mapSessionUser(data.session.user, profile.fullName, profile.accountStatus);
   },
 
   async signOut(): Promise<void> {
@@ -69,8 +74,8 @@ export const authRepository = {
   async getSession(): Promise<AuthUser | null> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
-    const accountStatus = await fetchAccountStatus();
-    return mapSessionUser(session.user, accountStatus);
+    const profile = await fetchUserProfile();
+    return mapSessionUser(session.user, profile.fullName, profile.accountStatus);
   },
 
   async changePassword(newPassword: string): Promise<void> {
