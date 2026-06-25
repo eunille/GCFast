@@ -4,7 +4,7 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 
 export const metadata = {
-  title: "Register — GFAST-MPTS",
+  title: "Register — GCFASApp",
 };
 
 export default function MemberRegisterPage() {

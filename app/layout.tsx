@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GFAST-MPTS",
-  description: "Teacher Membership Payment Tracking System",
+  title: "GCFASApp",
+  description: "Gordon College Faculty Association Staff Application",
 };
 
 export default function RootLayout({

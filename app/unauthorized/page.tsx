@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Access Denied — GFAST-MPTS",
+  title: "Access Denied — GCFASApp",
 };
 
 export default function UnauthorizedPage() {
