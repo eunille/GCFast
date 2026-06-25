@@ -3,16 +3,17 @@
 
 "use client";
 
-import { LayoutDashboard, Users, CreditCard, FileText, Settings2 } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, FileText, Settings2, Wallet } from "lucide-react";
 import { useRequireRole } from "@/features/auth/hooks/useRequireRole";
 import { AppShell } from "@/components/layout/AppShell";
 import type { NavItem } from "@/components/layout/AppShell";
 
 const TREASURER_NAV: NavItem[] = [
-  { href: "/treasurer/overview",  label: "Dashboard",  icon: <LayoutDashboard className="h-4 w-4" /> },
-  { href: "/treasurer/members",   label: "Members",    icon: <Users className="h-4 w-4" /> },
-  { href: "/treasurer/payments",  label: "Payments",   icon: <CreditCard className="h-4 w-4" /> },
-  { href: "/treasurer/reports",   label: "Reports",    icon: <FileText className="h-4 w-4" /> },
+  { href: "/treasurer/overview",  label: "Dashboard",   icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/treasurer/members",   label: "Members",     icon: <Users className="h-4 w-4" /> },
+  { href: "/treasurer/payments",  label: "Payments",    icon: <CreditCard className="h-4 w-4" /> },
+  { href: "/treasurer/budget",    label: "Budget",      icon: <Wallet className="h-4 w-4" /> },
+  { href: "/treasurer/reports",   label: "Reports",     icon: <FileText className="h-4 w-4" /> },
   { href: "/treasurer/dues",      label: "Dues Config", icon: <Settings2 className="h-4 w-4" /> },
 ];
 

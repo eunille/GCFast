@@ -44,7 +44,7 @@ export function LoginForm() {
             className="object-contain"
           />
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome to GCFAs-App
+            Welcome to GCFASApp
           </CardTitle>
          
         </CardHeader>

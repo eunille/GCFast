@@ -4,7 +4,7 @@
 import { LoginForm } from "@/features/auth/components/LoginForm";
 
 export const metadata = {
-  title: "Sign in — GFAST-MPTS",
+  title: "Sign in — GCFASApp",
 };
 
 export default function LoginPage() {

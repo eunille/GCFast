@@ -4,43 +4,43 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* GCFAS Brand Colors */
-  --background: #F9F9F9;
+  /* GCFASApp Brand Colors - White + #095B4F only */
+  --background: #FFFFFF;
   --foreground: #1A1A1A;
   --card: #FFFFFF;
   --card-foreground: #1A1A1A;
   --popover: #FFFFFF;
   --popover-foreground: #1A1A1A;
-  --primary: #1A5C35;
+  --primary: #095B4F;
   --primary-foreground: #ffffff;
-  --secondary: #C9A84C;
-  --secondary-foreground: #1A1A1A;
-  --muted: #F9F9F9;
-  --muted-foreground: #555555;
-  --accent: #C9A84C;
-  --accent-foreground: #1A1A1A;
+  --secondary: #095B4F;
+  --secondary-foreground: #ffffff;
+  --muted: #F5F5F5;
+  --muted-foreground: #6B7280;
+  --accent: #095B4F;
+  --accent-foreground: #ffffff;
   --destructive: #E74C3C;
   --destructive-foreground: #ffffff;
-  --border: #E0E0E0;
+  --border: #E5E7EB;
   --input: #FFFFFF;
-  --ring: #1A5C35;
+  --ring: #095B4F;
   --radius: 0.5rem;
 
-  /* Status semantic colors — GCFAS aligned */
-  --status-paid: #1A5C35;
-  --status-paid-bg: #E8F5F0;
-  --status-outstanding: #C9A84C;
-  --status-outstanding-bg: #FEF8EE;
+  /* Status semantic colors — aligned with #095B4F */
+  --status-paid: #095B4F;
+  --status-paid-bg: #E6F7F5;
+  --status-outstanding: #095B4F;
+  --status-outstanding-bg: #F0F9F8;
   
-  /* Sidebar — Dark green primary */
-  --sidebar: #1A5C35;
+  /* Sidebar — #095B4F background, white text */
+  --sidebar: #095B4F;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #1A5C35;
+  --sidebar-primary: #095B4F;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #C9A84C;
-  --sidebar-accent-foreground: #1A1A1A;
-  --sidebar-border: #2D7D4F;
-  --sidebar-ring: #C9A84C;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #095B4F;
+  --sidebar-border: #0A6D5F;
+  --sidebar-ring: #FFFFFF;
 }
 
 /* stylelint-disable-next-line at-rule-no-unknown */
@@ -134,12 +134,12 @@ body {
   --foreground: #F9F9F9;
   --card: #2A2A2A;
   --card-foreground: #F9F9F9;
-  --sidebar: #1A5C35;
+  --sidebar: #095B4F;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #1A5C35;
+  --sidebar-primary: #095B4F;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #C9A84C;
-  --sidebar-accent-foreground: #1A1A1A;
-  --sidebar-border: #2D7D4F;
-  --sidebar-ring: #C9A84C;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #095B4F;
+  --sidebar-border: #0A6D5F;
+  --sidebar-ring: #FFFFFF;
 }

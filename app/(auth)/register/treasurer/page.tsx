@@ -4,7 +4,7 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 
 export const metadata = {
-  title: "Treasurer Registration — GFAST-MPTS",
+  title: "Treasurer Registration — GCFASApp",
 };
 
 export default function TreasurerRegisterPage() {
