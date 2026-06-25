@@ -1,4 +1,4 @@
-# GCFASApp
+# GCFAs App
 
 Gordon College Faculty Association Staff Application - A Next.js-based membership and payment tracking system.
 

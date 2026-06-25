@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Access Denied — GCFASApp",
+  title: "Access Denied — GCFAs App",
 };
 
 export default function UnauthorizedPage() {

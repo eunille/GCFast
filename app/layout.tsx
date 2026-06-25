@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GCFASApp",
+  title: "GCFAs App",
   description: "Gordon College Faculty Association Staff Application",
 };
 
