@@ -4,7 +4,7 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 
 export const metadata = {
-  title: "Register — GCFASApp",
+  title: "Register — GCFAs App",
 };
 
 export default function MemberRegisterPage() {

@@ -4,7 +4,7 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 
 export const metadata = {
-  title: "Treasurer Registration — GCFASApp",
+  title: "Treasurer Registration — GCFAs App",
 };
 
 export default function TreasurerRegisterPage() {
