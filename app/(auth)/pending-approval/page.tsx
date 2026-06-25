@@ -58,7 +58,7 @@ export default function PendingApprovalPage() {
         <CardContent className="flex flex-col items-center gap-6 text-center pt-8 pb-8">
           <Image
             src="/gcfast_logo.png"
-            alt="GFAST"
+            alt="GCFASApp"
             width={40}
             height={40}
             className="object-contain"

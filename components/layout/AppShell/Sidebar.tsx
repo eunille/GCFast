@@ -60,7 +60,7 @@ export function AppSidebar({ navItems }: Props) {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full  overflow-hidden">
             <Image
               src="/gcfast_logo.png"
-              alt="GFAST"
+              alt="GCFASApp"
               width={40}
               height={40}
               className="object-cover"
@@ -70,10 +70,10 @@ export function AppSidebar({ navItems }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-sidebar-foreground leading-tight">
-              GCFAS
+              GCFASApp
             </p>
             <p className="text-xs text-sidebar-foreground/80 leading-tight">
-              Treasurer Portal
+              Faculty Association
             </p>
           </div>
         </div>
