@@ -17,6 +17,7 @@ export interface AuthMe {
 export interface AuthUser {
   id: string;
   email: string;
+  fullName: string;
   role: UserRole;
   memberId: string | null;
   accountStatus: AccountStatus;
