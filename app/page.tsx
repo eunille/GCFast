@@ -1,7 +1,7 @@
 // app/page.tsx
-// Root — redirects to login. Entry point for GCFAs App is /(auth)/login.
-import { redirect } from "next/navigation";
+// Root — Landing page. Entry point for GCFAs App.
+import { LandingPage } from "@/components/landing";
 
 export default function Home() {
-  redirect("/login");
+  return <LandingPage />;
 }
