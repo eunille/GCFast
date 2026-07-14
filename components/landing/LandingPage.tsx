@@ -38,7 +38,7 @@ export function LandingPage() {
                 Member Portal
               </Link>
               <Link href="/login/treasurer" className="text-[#1E3A5F] hover:text-[#095b4f] font-semibold transition-colors">
-                Treasurer Portal
+                Officer Portal
               </Link>
               <Link href="/register">
                 <Button className="bg-[#095b4f] hover:bg-[#074639] text-white font-semibold px-6 shadow-md">
@@ -81,16 +81,18 @@ export function LandingPage() {
           </div>
 
           {/* Gordon College Faculty Association Text - Two Lines */}
-          <div className="mb-14">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-tight drop-shadow-lg">
-              {/* GORDON COLLEGE - Large, Bold */}
-              <span className="block font-black text-white tracking-tight">GORDON COLLEGE</span>
-              {/* FACULTY ASSOCIATION - Smaller, Second Line */}
-              <span className="block mt-1.5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight">
-                FACULTY ASSOCIATION
-              </span>
-            </h1>
-          </div>
+        <div className="mb-14">
+          <h1 className="leading-tight drop-shadow-lg">
+            {/* GORDON COLLEGE - Smaller */}
+            <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-5xl font-black text-white tracking-tight">
+              GORDON COLLEGE
+            </span>
+            {/* FACULTY ASSOCIATION - Bigger */}
+            <span className="block mt-1.5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white tracking-tight">
+              FACULTY ASSOCIATION
+            </span>
+          </h1>
+        </div>
 
           {/* Core Values - With bullet separators, positioned at bottom */}
           <div className="absolute bottom-16 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12">
