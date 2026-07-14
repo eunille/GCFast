@@ -46,7 +46,7 @@ export function useSignIn() {
       if (user.role === "TREASURER" || user.role === "ADMIN") {
         router.replace("/treasurer/overview");
       } else {
-        router.replace("/member/dashboard");
+        router.replace("/member/announcements");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
