@@ -11,12 +11,13 @@ import { AppShell } from "@/components/layout/AppShell";
 import type { NavItem } from "@/components/layout/AppShell";
 
 const MEMBER_NAV: NavItem[] = [
-  { href: "/member/dashboard",      label: "My Dashboard",  icon: <LayoutDashboard className="h-4 w-4" /> },
-  { href: "/member/profile",        label: "My Profile",    icon: <User className="h-4 w-4" /> },
-  { href: "/member/reports",        label: "Reports",       icon: <FileText className="h-4 w-4" /> },
-  { href: "/member/messages",       label: "Messages",      icon: <MessageSquare className="h-4 w-4" /> },
-  { href: "/member/announcements",  label: "Announcements", icon: <Megaphone className="h-4 w-4" /> },
-  { href: "/member/bylaws",         label: "Bylaws",        icon: <BookOpen className="h-4 w-4" /> },
+  { href: "/member/dashboard",      label: "Dashboard",        icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/member/announcements",  label: "Announcement",     icon: <Megaphone className="h-4 w-4" /> },
+  { href: "/member/accomplishment", label: "Accomplishment",   icon: <FileText className="h-4 w-4" /> },
+  { href: "/member/reports",        label: "Treasurer Report", icon: <FileText className="h-4 w-4" /> },
+  { href: "/member/messages",       label: "Messages",         icon: <MessageSquare className="h-4 w-4" /> },
+  { href: "/member/profile",        label: "Profile",          icon: <User className="h-4 w-4" /> },
+  { href: "/member/bylaws",         label: "Constitution & Bylaws", icon: <BookOpen className="h-4 w-4" /> },
 ];
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {

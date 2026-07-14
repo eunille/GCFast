@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Search, X, ChevronLeft } from "lucide-react";
+import { BookOpen, Search, ChevronLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

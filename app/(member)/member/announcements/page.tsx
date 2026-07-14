@@ -1,12 +1,13 @@
 // app/(member)/member/announcements/page.tsx
-// Layer 4 — PRESENTATIONAL: Member announcements page (static/placeholder)
+// Layer 4 — PRESENTATIONAL: Member announcements page (social media feed style)
 
 "use client";
 
 import { useState } from "react";
-import { Megaphone, Calendar, Pin, ChevronRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Megaphone, Calendar, Pin, Building2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Mock data for announcements
 const announcements = [
@@ -16,7 +17,8 @@ const announcements = [
     date: "June 15, 2025",
     category: "GCFAS",
     isPinned: true,
-    excerpt: "The Gordon College Faculty Association Staff is pleased to announce the newly elected officers for Academic Year 2025-2026...",
+    author: "GCFAS Admin",
+    authorRole: "Administrator",
     content: `Gordon College Faculty Association Staff Officers AY 2025-2026
 
 We are pleased to announce the newly elected officers who will serve the GCFAS community:
@@ -40,7 +42,8 @@ Contact: gcfas@gordon.edu.ph | 047-222-4080`,
     date: "September 12, 2025",
     category: "Policy",
     isPinned: true,
-    excerpt: "To promote wellness, reduce congestion, and support building operations, the college will observe a no-elevator-use policy every Friday...",
+    author: "Admin & Finance Office",
+    authorRole: "Administration",
     content: `Gordon College Friday No Elevator Use Policy
 
 To promote wellness, reduce congestion, and support building operations, the college will observe a no-elevator-use policy every Friday, effective this month of September 2025.
@@ -57,75 +60,89 @@ Exceptions: Elevators remain available for:
 For questions or concerns, please contact: vp.adminfinance@gordoncollege.edu.ph or 047-222-4080 local 324.`,
   },
   {
-    id: 2,
+    id: 3,
     title: "HELP US KEEP OUR CAMPUS IN TOP SHAPE!",
     date: "March 11, 2026",
     category: "Campus Life",
     isPinned: false,
-    excerpt: "Join us in maintaining a clean and beautiful campus environment. Your participation matters!",
+    author: "Facilities Management",
+    authorRole: "Staff",
     content: "Join us in maintaining a clean and beautiful campus environment. Proper waste disposal, keeping common areas tidy, and reporting maintenance issues help create a better learning space for everyone. Your participation matters!",
   },
   {
-    id: 3,
+    id: 4,
     title: "Implementation of Campus-Wide Energy Conservation Measures",
     date: "March 09, 2026",
     category: "Policy",
     isPinned: false,
-    excerpt: "Gordon College is implementing energy conservation measures to promote sustainability and reduce operational costs...",
+    author: "Sustainability Office",
+    authorRole: "Administration",
     content: "Gordon College is implementing energy conservation measures to promote sustainability and reduce operational costs. All faculty and staff are encouraged to turn off lights and air conditioning units when not in use, and to use natural lighting when possible.",
   },
   {
-    id: 4,
+    id: 5,
     title: "REMINDERS TO ALL: ENERGY AND RESOURCES CONSERVATION",
     date: "March 04, 2026",
     category: "Reminder",
     isPinned: false,
-    excerpt: "Please be mindful of energy and resource consumption. Turn off lights, computers, and air conditioning when leaving rooms...",
+    author: "Campus Operations",
+    authorRole: "Staff",
     content: "Please be mindful of energy and resource consumption. Turn off lights, computers, and air conditioning when leaving rooms. Use water wisely and report any leaks immediately. Together, we can make a difference!",
   },
   {
-    id: 5,
+    id: 6,
     title: "UPDATED ACADEMIC CALENDAR FOR AY 2025-2026",
     date: "January 20, 2026",
     category: "Academic",
     isPinned: true,
-    excerpt: "Please take note of the updated academic calendar for the current academic year 2025-2026...",
+    author: "Registrar's Office",
+    authorRole: "Academic Affairs",
     content: "Please take note of the updated academic calendar for the current academic year 2025-2026. Key dates include midterm exams, final exams, and semester breaks. Check your email for the complete calendar.",
   },
   {
-    id: 6,
+    id: 7,
     title: "ONSITE AND ONLINE CLASS SCHEDULE FOR 2ND SEMESTER AY 2025-2026",
     date: "January 20, 2026",
     category: "Academic",
     isPinned: false,
-    excerpt: "The class schedule for the second semester is now available. Please check your student portal for your assigned schedule...",
+    author: "Registrar's Office",
+    authorRole: "Academic Affairs",
     content: "The class schedule for the second semester is now available. Please check your student portal for your assigned schedule and room assignments. For any conflicts or concerns, contact the Registrar's Office.",
   },
   {
-    id: 7,
+    id: 8,
     title: "REMINDERS: CLAYGO / BYOT POLICY being implemented in Gordon College",
     date: "August 22, 2025",
     category: "Policy",
     isPinned: false,
-    excerpt: "Clean As You Go (CLAYGO) and Bring Your Own Tumbler (BYOT) policies are now strictly implemented across campus...",
+    author: "Student Affairs Office",
+    authorRole: "Administration",
     content: "Clean As You Go (CLAYGO) and Bring Your Own Tumbler (BYOT) policies are now strictly implemented across campus. Please clean up after yourself in all common areas and bring reusable tumblers to reduce plastic waste.",
   },
   {
-    id: 8,
+    id: 9,
     title: "GORDON COLLEGE ACADEMIC CALENDAR AY 2025-2026",
     date: "August 04, 2025",
     category: "Academic",
     isPinned: false,
-    excerpt: "The official academic calendar for AY 2025-2026 has been released. Please mark important dates on your calendar...",
+    author: "Registrar's Office",
+    authorRole: "Academic Affairs",
     content: "The official academic calendar for AY 2025-2026 has been released. Important dates include enrollment periods, start of classes, exam schedules, and holidays. Download the full calendar from the college website.",
   },
 ];
 
 const categories = ["All", "GCFAS", "Policy", "Academic", "Campus Life", "Reminder"];
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export default function MemberAnnouncementsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const filteredAnnouncements = announcements.filter(
     (announcement) =>
@@ -136,7 +153,7 @@ export default function MemberAnnouncementsPage() {
   const regularAnnouncements = filteredAnnouncements.filter((a) => !a.isPinned);
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-3xl mx-auto">
       
       {/* ── Page header ──────────────────────────────────────────────────── */}
       <div>
@@ -154,9 +171,9 @@ export default function MemberAnnouncementsPage() {
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
@@ -167,34 +184,21 @@ export default function MemberAnnouncementsPage() {
 
       {/* ── Pinned announcements ─────────────────────────────────────────── */}
       {pinnedAnnouncements.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Pin className="h-4 w-4 text-amber-500" />
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <Pin className="h-4 w-4 text-amber-600 fill-amber-600" />
             <h2 className="text-sm font-semibold text-foreground">Pinned Announcements</h2>
           </div>
           {pinnedAnnouncements.map((announcement) => (
-            <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              isExpanded={expandedId === announcement.id}
-              onToggle={() => setExpandedId(expandedId === announcement.id ? null : announcement.id)}
-            />
+            <AnnouncementPost key={announcement.id} announcement={announcement} />
           ))}
         </div>
       )}
 
       {/* ── Regular announcements ────────────────────────────────────────── */}
-      <div className="space-y-3">
-        {pinnedAnnouncements.length > 0 && (
-          <h2 className="text-sm font-semibold text-foreground">Recent Announcements</h2>
-        )}
+      <div className="space-y-4">
         {regularAnnouncements.map((announcement) => (
-          <AnnouncementCard
-            key={announcement.id}
-            announcement={announcement}
-            isExpanded={expandedId === announcement.id}
-            onToggle={() => setExpandedId(expandedId === announcement.id ? null : announcement.id)}
-          />
+          <AnnouncementPost key={announcement.id} announcement={announcement} />
         ))}
       </div>
 
@@ -214,58 +218,67 @@ export default function MemberAnnouncementsPage() {
   );
 }
 
-// ── Announcement Card Component ─────────────────────────────────────────────
+// ── Announcement Post Component (Social Media Style) ────────────────────────
 
-interface AnnouncementCardProps {
+interface AnnouncementPostProps {
   announcement: typeof announcements[0];
-  isExpanded: boolean;
-  onToggle: () => void;
 }
 
-function AnnouncementCard({ announcement, isExpanded, onToggle }: AnnouncementCardProps) {
+function AnnouncementPost({ announcement }: AnnouncementPostProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-4">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow border border-border">
+      <CardContent className="p-0">
+        
+        {/* Post header - Author info */}
+        <div className="flex items-start gap-3 p-4 pb-3">
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src="" alt={announcement.author} />
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+              {getInitials(announcement.author)}
+            </AvatarFallback>
+          </Avatar>
+          
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge variant="secondary" className="text-xs">
-                {announcement.category}
-              </Badge>
-              {announcement.isPinned && (
-                <Pin className="h-3 w-3 text-amber-500 fill-amber-500" />
-              )}
-            </div>
-            <CardTitle className="text-base font-semibold text-foreground leading-tight">
-              {announcement.title}
-            </CardTitle>
-            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span>{announcement.date}</span>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight">
+                  {announcement.author}
+                </p>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {announcement.authorRole}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>{announcement.date}</span>
+                  </div>
+                  <span className="text-muted-foreground">•</span>
+                  <Building2 className="h-3 w-3 text-muted-foreground" />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 shrink-0">
+                <Badge variant="secondary" className="text-xs">
+                  {announcement.category}
+                </Badge>
+                {announcement.isPinned && (
+                  <Pin className="h-3.5 w-3.5 text-amber-600 fill-amber-600" />
+                )}
+              </div>
             </div>
           </div>
-          <button
-            onClick={onToggle}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-muted transition-colors"
-            aria-label={isExpanded ? "Collapse" : "Expand"}
-          >
-            <ChevronRight 
-              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-            />
-          </button>
         </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0">
-        {isExpanded ? (
+
+        {/* Post content */}
+        <div className="px-4 pb-4">
+          <h3 className="text-base font-bold text-foreground mb-3 leading-tight">
+            {announcement.title}
+          </h3>
           <div className="text-sm text-foreground whitespace-pre-line leading-relaxed">
             {announcement.content}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {announcement.excerpt}
-          </p>
-        )}
+        </div>
+
       </CardContent>
     </Card>
   );

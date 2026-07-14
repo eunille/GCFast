@@ -56,7 +56,7 @@ function renderLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: Pi
   return (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
       fontSize={10} fontWeight={700}>
-      {`${Math.round((percent as number) * 100)}%`}
+      {Math.round((percent as number) * 100)}
     </text>
   );
 }
@@ -107,7 +107,7 @@ export function PaymentDistributionChart({ data }: Props) {
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <span className="font-medium text-foreground">{formatAmount(d.total)}</span>
-              <span className="text-muted-foreground w-7 text-right">{d.percent}%</span>
+              <span className="text-muted-foreground w-7 text-right">{d.percent}</span>
             </div>
           </div>
         ))}

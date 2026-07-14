@@ -127,7 +127,7 @@ export function AppSidebar({ navItems }: Props) {
           </div>
 
           {/* Name + role */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" key={user?.id || 'user-info'}>
             <p className="text-sm font-semibold text-sidebar-foreground truncate capitalize">
               {displayName}
             </p>
