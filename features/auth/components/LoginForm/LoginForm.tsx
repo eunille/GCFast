@@ -121,6 +121,10 @@ export function LoginForm() {
           <Button asChild variant="outline" className="w-full font-medium">
             <Link href="/register">Register as Member</Link>
           </Button>
+
+          <Button asChild variant="ghost" className="w-full font-medium text-muted-foreground">
+            <Link href="/">← Back to Home</Link>
+          </Button>
         </CardContent>
 
         </Card>

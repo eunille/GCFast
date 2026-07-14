@@ -23,19 +23,22 @@ export function LandingPage() {
             <div className="flex items-center space-x-3">
               <Image 
                 src="/gcfast_logo.png" 
-                alt="GCFAS Logo" 
+                alt="GCFAs Logo" 
                 width={48} 
                 height={48}
                 className="object-contain"
               />
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-[#1E3A5F] leading-tight">GCFAS</span>
+                <span className="text-xl font-bold text-[#1E3A5F] leading-tight">GCFAs App</span>
                 <span className="text-xs text-gray-500 font-medium">Gordon College Faculty Association</span>
               </div>
             </div>
             <div className="flex items-center space-x-6">
-              <Link href="/login" className="text-[#1E3A5F] hover:text-[#095b4f] font-semibold transition-colors">
+              <Link href="/login/member" className="text-[#1E3A5F] hover:text-[#095b4f] font-semibold transition-colors">
                 Member Portal
+              </Link>
+              <Link href="/login/treasurer" className="text-[#1E3A5F] hover:text-[#095b4f] font-semibold transition-colors">
+                Treasurer Portal
               </Link>
               <Link href="/register">
                 <Button className="bg-[#095b4f] hover:bg-[#074639] text-white font-semibold px-6 shadow-md">
@@ -52,67 +55,55 @@ export function LandingPage() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image 
-            src="/her_gcfas.png" 
+            src="/cover_gcfas.jpg" 
             alt="Gordon College Faculty Association" 
             fill
             className="object-cover object-center"
             priority
-            quality={100}
+            quality={75}
           />
-          {/* Gradient Overlay - Lighter for better readability */}
+          {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A5F]/85 via-[#095b4f]/80 to-[#074639]/85"></div>
-          {/* Decorative Elements */}
-          <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
         </div>
 
         {/* Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-          {/* Small Badge */}
-          <div className="mb-8 inline-block">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 px-5 py-2 rounded-full">
-              <span className="text-white text-sm font-medium">Gordon College Faculty Association</span>
-            </div>
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-center">
+          {/* GCFAS Logo - Similar to original */}
+          <div className="mb-10">
+            <Image 
+              src="/gcfast_logo.png" 
+              alt="GCFAS Logo" 
+              width={190} 
+              height={190}
+              className="mx-auto drop-shadow-2xl"
+              priority
+            />
           </div>
 
-          {/* Main Heading - Clean and Bold */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-            Empowering Educators,
-            <br />
-            Building Excellence
-          </h1>
-          
-          {/* Subtitle - Two Lines */}
-          <p className="text-base sm:text-lg md:text-xl text-white/85 leading-relaxed max-w-3xl mx-auto mb-10">
-            Advancing professional development, protecting member interests, and building
-            <br className="hidden sm:block" />
-            a thriving academic community for Gordon College faculty
-          </p>
-          
-          {/* Single Primary CTA */}
-          <div className="mb-12">
-            <Link href="/register">
-              <Button size="lg" className="bg-white text-[#095b4f] hover:bg-gray-50 px-10 py-6 text-lg font-bold shadow-2xl hover:shadow-white/30 transition-all transform hover:scale-105 rounded-full">
-                Join GCFAS Today
-              </Button>
-            </Link>
+          {/* Gordon College Faculty Association Text - Two Lines */}
+          <div className="mb-14">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-tight drop-shadow-lg">
+              {/* GORDON COLLEGE - Large, Bold */}
+              <span className="block font-black text-white tracking-tight">GORDON COLLEGE</span>
+              {/* FACULTY ASSOCIATION - Smaller, Second Line */}
+              <span className="block mt-1.5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight">
+                FACULTY ASSOCIATION
+              </span>
+            </h1>
           </div>
 
-          {/* Trust/Info Line */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-white/70 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-              <span>Official Faculty Organization</span>
+          {/* Core Values - With bullet separators, positioned at bottom */}
+          <div className="absolute bottom-16 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12">
+            <div className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wide drop-shadow-md">
+              CHARACTER
             </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-              <span>Serving Gordon College Since Establishment</span>
+            <div className="hidden sm:block w-2 h-2 rounded-full bg-white/60"></div>
+            <div className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wide drop-shadow-md">
+              EXCELLENCE
             </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-              <span>Member-Focused Services</span>
+            <div className="hidden sm:block w-2 h-2 rounded-full bg-white/60"></div>
+            <div className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wide drop-shadow-md">
+              SERVICE
             </div>
           </div>
         </div>
@@ -123,10 +114,9 @@ export function LandingPage() {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-[#1E3A5F] mb-6">
-              Welcome to GCFAS
+            <h2 className="text-5xl font-bold text-[#1E3A5F] mb-8">
+              Gordon College Faculty Association
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#095b4f] to-[#1E3A5F] mx-auto mb-8"></div>
           </div>
 
           <div className="max-w-4xl mx-auto">
@@ -286,7 +276,7 @@ export function LandingPage() {
                         As part of the <span className="font-semibold">Faculty Wellness Program</span>, the BSM Program Chair and CAHS CESU Coordinator, in collaboration with <span className="font-semibold text-[#095b4f]">GCFAS</span>, is offering free Anti-Tetanus with Diphtheria (Td) Vaccination.
                       </p>
                       <p className="text-gray-600 text-sm leading-relaxed">
-                        Interested Gordon College Full-time Faculty Members may proceed to <span className="font-semibold">RM119</span> and look for Ms. Maria Sandra C. Rivera. Limited slots only so don't miss this opportunity to protect yourself and others! 🙌🏻
+                        Interested Gordon College Full-time Faculty Members may proceed to <span className="font-semibold">RM119</span> and look for Ms. Maria Sandra C. Rivera. Limited slots only so don&apos;t miss this opportunity to protect yourself and others! 🙌🏻
                       </p>
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <p className="text-xs text-gray-500">
@@ -312,16 +302,16 @@ export function LandingPage() {
                       />
                     </div>
                     <div className="p-6">
-                      <h3 className="font-bold text-xl text-[#1E3A5F] mb-3">Gordon College Women's Sway and Shake 💃🎶</h3>
+                      <h3 className="font-bold text-xl text-[#1E3A5F] mb-3">Gordon College Women&apos;s Sway and Shake 💃🎶</h3>
                       <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                        The <span className="font-semibold text-[#095b4f]">GCFAS</span> would like to inform everyone that the scheduled <span className="font-semibold">Women's Sway and Shake</span>, originally set for March 27, 2026, in celebration of National Women's Month, has been postponed.
+                        The <span className="font-semibold text-[#095b4f]">GCFAS</span> would like to inform everyone that the scheduled <span className="font-semibold">Women&apos;s Sway and Shake</span>, originally set for March 27, 2026, in celebration of National Women&apos;s Month, has been postponed.
                       </p>
                       <p className="text-gray-600 text-sm leading-relaxed">
                         This decision is made in compliance with Executive Order No. 029, particularly Section 2(b), which implements a four-day work week arrangement, designating Fridays as work-from-home days. Let us continue to uplift and empower one another in our community. See you soon as we celebrate women! 🙌🏻
                       </p>
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <p className="text-xs text-gray-500">
-                          <span className="font-semibold text-[#095b4f]">Event:</span> National Women's Month Celebration
+                          <span className="font-semibold text-[#095b4f]">Event:</span> National Women&apos;s Month Celebration
                         </p>
                         <p className="text-xs text-gray-400 mt-1">Postponed - March 27, 2026</p>
                       </div>
@@ -415,7 +405,7 @@ export function LandingPage() {
                   height={36}
                   className="object-contain"
                 />
-                <span className="text-xl font-bold">GCFAS</span>
+                <span className="text-xl font-bold">GCFAs</span>
               </div>
               <p className="text-gray-400 text-sm max-w-md mb-4">
                 Gordon College Faculty Association Membership & Payment Tracking System - Streamlining membership and payment tracking for faculty excellence.
