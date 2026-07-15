@@ -16,13 +16,12 @@ import {
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/98 backdrop-blur-md border-b-2 border-[#095b4f]/10 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-3">
               <Image 
-                src="/gcfast_logo.png" 
+                src="/GCFAS-LOGO-2026.png" 
                 alt="GCFAs Logo" 
                 width={48} 
                 height={48}
@@ -38,7 +37,7 @@ export function LandingPage() {
                 Member Portal
               </Link>
               <Link href="/login/treasurer" className="text-[#1E3A5F] hover:text-[#095b4f] font-semibold transition-colors">
-                Treasurer Portal
+                Officer Portal
               </Link>
               <Link href="/register">
                 <Button className="bg-[#095b4f] hover:bg-[#074639] text-white font-semibold px-6 shadow-md">
@@ -50,9 +49,7 @@ export function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image 
             src="/cover_gcfas.jpg" 
@@ -62,16 +59,13 @@ export function LandingPage() {
             priority
             quality={75}
           />
-          {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A5F]/85 via-[#095b4f]/80 to-[#074639]/85"></div>
         </div>
 
-        {/* Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-center">
-          {/* GCFAS Logo - Similar to original */}
           <div className="mb-10">
             <Image 
-              src="/gcfast_logo.png" 
+              src="/GCFAS-LOGO-2026.png" 
               alt="GCFAS Logo" 
               width={190} 
               height={190}
@@ -80,19 +74,15 @@ export function LandingPage() {
             />
           </div>
 
-          {/* Gordon College Faculty Association Text - Two Lines */}
           <div className="mb-14">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-tight drop-shadow-lg">
-              {/* GORDON COLLEGE - Large, Bold */}
-              <span className="block font-black text-white tracking-tight">GORDON COLLEGE</span>
-              {/* FACULTY ASSOCIATION - Smaller, Second Line */}
-              <span className="block mt-1.5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight">
+            <h1 className="leading-tight drop-shadow-lg">
+              <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tight">GORDON COLLEGE</span>
+              <span className="block mt-1.5 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white tracking-tight">
                 FACULTY ASSOCIATION
               </span>
             </h1>
           </div>
 
-          {/* Core Values - With bullet separators, positioned at bottom */}
           <div className="absolute bottom-16 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12">
             <div className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wide drop-shadow-md">
               CHARACTER
@@ -110,7 +100,6 @@ export function LandingPage() {
 
       </section>
 
-      {/* Welcome Section */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -133,10 +122,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Mission, Vision & Core Values Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Banner */}
           <div className="bg-gray-100 rounded-3xl p-16 mb-12 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
               Empowering Faculty Excellence & Professional Growth
@@ -147,16 +134,13 @@ export function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Mission Card - Bottom Left */}
             <Card className="bg-gray-50 shadow-lg hover:shadow-xl transition-shadow self-end">
               <CardContent className="p-0">
-                {/* Illustration */}
                 <div className="bg-white p-8 flex items-center justify-center h-64">
                   <div className="w-32 h-32 bg-gradient-to-br from-[#095b4f] to-[#095b4f]/70 rounded-full flex items-center justify-center shadow-2xl">
                     <Target className="w-20 h-20 text-white" strokeWidth={1.5} />
                   </div>
                 </div>
-                {/* Content */}
                 <div className="p-8 border-t-4 border-black">
                   <h3 className="text-3xl font-bold text-gray-900 mb-4">Mission</h3>
                   <p className="text-gray-700 text-sm leading-relaxed">
@@ -166,16 +150,13 @@ export function LandingPage() {
               </CardContent>
             </Card>
 
-            {/* Vision Card - Center */}
             <Card className="bg-gray-50 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-0">
-                {/* Illustration */}
                 <div className="bg-white p-8 flex items-center justify-center h-64">
                   <div className="w-32 h-32 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/70 rounded-full flex items-center justify-center shadow-2xl">
                     <Eye className="w-20 h-20 text-white" strokeWidth={1.5} />
                   </div>
                 </div>
-                {/* Content */}
                 <div className="p-8 border-t-4 border-black">
                   <h3 className="text-3xl font-bold text-gray-900 mb-4">Vision</h3>
                   <p className="text-gray-700 text-sm leading-relaxed">
@@ -185,16 +166,13 @@ export function LandingPage() {
               </CardContent>
             </Card>
 
-            {/* Core Values Card - Top Right */}
             <Card className="bg-gray-50 shadow-lg hover:shadow-xl transition-shadow self-start">
               <CardContent className="p-0">
-                {/* Illustration */}
                 <div className="bg-white p-8 flex items-center justify-center h-64">
                   <div className="w-32 h-32 bg-gradient-to-br from-[#2E86C1] to-[#2E86C1]/70 rounded-full flex items-center justify-center shadow-2xl">
                     <Shield className="w-20 h-20 text-white" strokeWidth={1.5} />
                   </div>
                 </div>
-                {/* Content */}
                 <div className="p-8 border-t-4 border-black">
                   <h3 className="text-3xl font-bold text-gray-900 mb-4">Core Values</h3>
                   <p className="text-gray-700 text-sm leading-relaxed">
@@ -207,7 +185,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Recent Activities Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -227,7 +204,6 @@ export function LandingPage() {
             className="w-full max-w-5xl mx-auto mb-8"
           >
             <CarouselContent>
-              {/* Faculty General Assembly 2026 */}
               <CarouselItem className="md:basis-1/2 lg:basis-1/2">
                 <div className="p-2">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full">
@@ -258,7 +234,6 @@ export function LandingPage() {
                 </div>
               </CarouselItem>
 
-              {/* Faculty Wellness Program: Free Tetanus-Diphtheria Vaccination */}
               <CarouselItem className="md:basis-1/2 lg:basis-1/2">
                 <div className="p-2">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full">
@@ -289,7 +264,6 @@ export function LandingPage() {
                 </div>
               </CarouselItem>
 
-              {/* Gordon College Women's Sway and Shake */}
               <CarouselItem className="md:basis-1/2 lg:basis-1/2">
                 <div className="p-2">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full">
@@ -320,7 +294,6 @@ export function LandingPage() {
                 </div>
               </CarouselItem>
 
-              {/* Gordon College First Friday Mass */}
               <CarouselItem className="md:basis-1/2 lg:basis-1/2">
                 <div className="p-2">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full">
@@ -366,7 +339,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-[#095b4f] to-[#074639]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
@@ -392,14 +364,13 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2">
               <div className="flex items-center space-x-3 mb-4">
                 <Image 
-                  src="/gcfast_logo.png" 
+                  src="/GCFAS-LOGO-2026.png" 
                   alt="GCFAS Logo" 
                   width={36} 
                   height={36}
